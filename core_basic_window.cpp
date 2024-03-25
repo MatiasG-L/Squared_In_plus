@@ -13,6 +13,7 @@
 
 #include "raylib.h"
 #include "Player.h"
+#include "Platform.h"
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------
@@ -31,7 +32,7 @@ int main(void)
 
     // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
     Player player;
-
+    Platform platform1;
 
     SetTargetFPS(60);
     player.setSpeed(10);
@@ -47,7 +48,7 @@ int main(void)
          if (IsKeyDown(KEY_RIGHT)) player.position.x += player.getSpeed();
          if(IsKeyDown(KEY_LEFT)) player.position.x -= player.getSpeed();
          if(IsKeyPressed(KEY_UP) && player.isGrounded) {player.isGrounded = false; player.set_yVelocity(20);}
-         if(!player.isGrounded) player.set_yVelocity(player.get_yVelocity() - 1);
+         if(!player.isGrounded) player.set_yVelocity(player.get_yVelocity() - player.getGravity());
          else player.set_yVelocity(0);
          player.position.y += -player.get_yVelocity();
          
@@ -61,7 +62,7 @@ int main(void)
 
             ClearBackground(RAYWHITE);
           
-             DrawRectangle(player.position.x, player.position.y, 100, 100 , BLACK);
+             DrawRectangle(player.position.x, player.position.y, player.width, player.height, BLACK);
              DrawRectangle(0, 700 ,1000 ,300 , BLACK);
         EndDrawing();
         //----------------------------------------------------------------------------------

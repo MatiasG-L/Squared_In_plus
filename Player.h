@@ -4,10 +4,13 @@ class Player{
     private:
     float speed;
     float yVelocity = 0;
+    float Gravity = 2;
     
     public:
     Vector2 position;
     bool isGrounded;
+    float width = 100;
+    float height = 100;
    
     Player(){
         position.x = 100;
@@ -28,4 +31,11 @@ class Player{
     void set_yVelocity(float yVelocity){
         this->yVelocity = yVelocity;
     }
+    float getGravity(){
+        return Gravity;
+    }
+    void setGravity(float Gravity){
+        this->Gravity = Gravity;
+    }
+    
 };
