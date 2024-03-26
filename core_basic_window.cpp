@@ -22,8 +22,8 @@ int main(void)
 {
     // Initialization
     //--------------------------------------------------------------------------------------
-    const int screenWidth = 1000;
-    const int screenHeight = 800;
+    const int screenWidth = 1200;
+    const int screenHeight = 900;
     
  
     
@@ -32,11 +32,11 @@ int main(void)
 
     // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
     Player player;
-    Platform platform1;
-
+    Platform platform1(200, 600, 600, 300);
+    //player.position.x = platform1.position.x;
     SetTargetFPS(60);
     player.setSpeed(10);
-   
+
 
     //--------------------------------------------------------------------------------------
 
@@ -52,7 +52,13 @@ int main(void)
          else player.set_yVelocity(0);
          player.position.y += -player.get_yVelocity();
          
-         if(player.position.y > 600) {player.isGrounded = true; player.position.y = 601;}
+         // collision
+         if((player.position.y > platform1.position.y - (platform1.height/2) + (player.height/2)) && (player.position.x < platform1.position.x + platform1.width && player.position.x > platform1.position.x - player.width)) {
+             if(player.position.y < platform1.position.y){
+                 player.isGrounded = true;
+                 player.position.y = platform1.position.y - (platform1.height/2) + (player.height/2)+1;
+             }
+         }
          else player.isGrounded = false;
             
             
@@ -62,8 +68,9 @@ int main(void)
 
             ClearBackground(RAYWHITE);
           
+             Rectangle rec = {platform1.position.x, platform1.position.y, platform1.width, platform1.height};
              DrawRectangle(player.position.x, player.position.y, player.width, player.height, BLACK);
-             DrawRectangle(0, 700 ,1000 ,300 , BLACK);
+             DrawRectanglePro(rec, {0 , platform1.position.y - platform1.height*2}, 0, GRAY);
         EndDrawing();
         //----------------------------------------------------------------------------------
     }

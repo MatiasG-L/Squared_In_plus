@@ -13,9 +13,9 @@ class Player{
     float height = 100;
    
     Player(){
-        position.x = 100;
+        position.x = 300;
         position.y = 100;
-        speed = 5;
+        speed = 3;
         isGrounded = false;
     }
  
