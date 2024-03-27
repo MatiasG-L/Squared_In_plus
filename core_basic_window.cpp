@@ -30,6 +30,7 @@ int main(void)
     const int screenHeight = 900;
     char xposition[20];
     char yposition[20];
+    char groundState[20];
  
     
 
@@ -38,7 +39,7 @@ int main(void)
     // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
     Player player;
     Platform platform1(-50, 600, 600, 300);
-    Platform platform2(800, 600, 600, 300);
+    Platform platform2(800, 600, 100, 300);
 
 
     std::vector<Platform> collidables;
@@ -61,25 +62,37 @@ int main(void)
          if(IsKeyDown(KEY_LEFT)) player.position.x -= player.getSpeed();
          if(IsKeyPressed(KEY_UP) && player.isGrounded) {player.isGrounded = false; player.set_yVelocity(20);}
          
-         if(!player.isGrounded) player.set_yVelocity(player.get_yVelocity() - player.getGravity());
-         else player.set_yVelocity(0);
-         player.position.y += -player.get_yVelocity();
+        
          
          // collision
          
          for(Platform collider : collidables){
-             
-             if((player.position.y > collider.position.y - (collider.height/2) + (player.height/2)) && (player.position.x < collider.position.x + collider.width && player.position.x > collider.position.x - player.width)) {
-                if(player.position.y < collider.position.y){
-                    player.isGrounded = true;
-                    player.position.y = collider.position.y - (collider.height/2) + (player.height/2)+1;
-                }
-                else player.isGrounded = false;
+            
+             if((player.position.y > collider.position.y - (collider.height/2) + (player.height/2))) {
+                 
+                 if((player.position.x < collider.position.x + collider.width && player.position.x > collider.position.x - player.width)){
+                     
+                     if(player.position.y < collider.position.y){
+                        player.isGrounded = true;
+                        
+                        player.position.y = collider.position.y - (collider.height/2) + (player.height/2);
+                     }
+                    
+                 } else player.isGrounded = false;    
+       
             }
-         
+            
+           
+            
          }
          
-         sprintf(xposition, "x:  %f", player.get_yVelocity());   
+          if(!player.isGrounded) player.set_yVelocity(player.get_yVelocity() - player.getGravity());
+          else player.set_yVelocity(0);
+          player.position.y += -player.get_yVelocity();
+         
+         
+         sprintf(groundState, "Ground state: %d", player.isGrounded);   
+         sprintf(xposition, "yVelocity: %f", player.get_yVelocity());   
          sprintf(yposition, "y:  %f", player.position.y);
             
             
@@ -95,6 +108,7 @@ int main(void)
              DrawRectanglePro(platform2.rec, {0,0}, 0, GRAY);
              DrawText(xposition, 100, 100, 30, BLACK); 
              DrawText(yposition, 100, 200, 30, BLACK); 
+             DrawText(groundState, 100, 300, 30, BLACK);
         EndDrawing();
         //----------------------------------------------------------------------------------
     }
