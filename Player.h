@@ -4,7 +4,7 @@ class Player{
     private:
     float speed;
     float yVelocity = 0;
-    float Gravity = 2;
+    float Gravity = 1;
     
     public:
     Vector2 position;
