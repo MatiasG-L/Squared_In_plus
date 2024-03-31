@@ -12,8 +12,8 @@
 ********************************************************************************************/
 
 #include <vector>
-#include <iostream>
 #include <string>
+#include <cmath>
 
 #include "raylib.h"
 #include "Player.h"
@@ -39,7 +39,7 @@ int main(void)
     // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
     Player player;
     Platform platform1(200, 600, 150, 300);
-    Platform platform2(800, 600, 100, 300);
+    Platform platform2(800, 650, 100, 300);
 
 
     std::vector<Platform> collidables;
@@ -62,26 +62,33 @@ int main(void)
          if(IsKeyDown(KEY_LEFT)) player.position.x -= player.getSpeed();
          if(IsKeyPressed(KEY_UP) && player.isGrounded) {player.isGrounded = false; player.set_yVelocity(20);}
          
+         if(IsKeyPressed(KEY_R) ) {player.position = {200,100}; player.isGrounded = false; player.set_yVelocity(0);}
+         
          player.Rec = {player.position.x, player.position.y, player.width, player.height};
          
          // collision
+         
          for(Platform collider : collidables){
-            
-             if((player.position.y > collider.position.y - (collider.height/2) + (player.height/2))) {
+            if(sqrt(pow(player.position.x - collider.position.x, 2) + pow(player.position.y - collider.position.y, 2))  < 300){
+             if((player.position.y > collider.position.y - collider.height/2)) {
                  
-                 if(player.position.x < collider.position.x + collider.width && player.position.x > collider.position.x - collider.width){
+                 if(player.position.x < collider.position.x + collider.width && player.position.x > collider.position.x - player.width){
                      
-                     if(player.position.y < collider.position.y){
+                     if(CheckCollisionRecs(player.Rec, collider.rec) && player.position.y < collider.position.y){
                          
                         player.isGrounded = true;
                         player.position.y = collider.position.y - (collider.height/2) + (player.height/2);
                         
                      }
                     
-                 } else player.isGrounded = false;    
+                 }else player.isGrounded = false;
        
             }
             
+                
+                
+            }
+         
          }
          
          
@@ -102,11 +109,16 @@ int main(void)
 
             ClearBackground(RAYWHITE);
             
-             
+             for(Platform collider : collidables){
+                 DrawRectanglePro(collider.rec, {0,0}, 0, GRAY);
+                 DrawCircle(collider.position.x , collider.position.y , 10, BLACK);
+                 DrawCircle(collider.position.x + collider.width, collider.position.y, 10, BLACK);
+             }
              DrawRectanglePro(player.Rec, {0,0}, 0, BLACK);
+             DrawCircle(player.position.x , player.position.y , 30, WHITE);
              
-             DrawRectanglePro(platform1.rec, {0,0}, 0, GRAY);
-             DrawRectanglePro(platform2.rec, {0,0}, 0, GRAY);
+             
+             
              DrawText(xposition, 100, 100, 30, BLACK); 
              DrawText(yposition, 100, 200, 30, BLACK); 
              DrawText(groundState, 100, 300, 30, BLACK);
