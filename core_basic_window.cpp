@@ -38,7 +38,7 @@ int main(void)
 
     // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
     Player player;
-    Platform platform1(-50, 600, 600, 300);
+    Platform platform1(200, 600, 150, 300);
     Platform platform2(800, 600, 100, 300);
 
 
@@ -62,29 +62,29 @@ int main(void)
          if(IsKeyDown(KEY_LEFT)) player.position.x -= player.getSpeed();
          if(IsKeyPressed(KEY_UP) && player.isGrounded) {player.isGrounded = false; player.set_yVelocity(20);}
          
-        
+         player.Rec = {player.position.x, player.position.y, player.width, player.height};
          
          // collision
-         
          for(Platform collider : collidables){
             
              if((player.position.y > collider.position.y - (collider.height/2) + (player.height/2))) {
                  
-                 if((player.position.x < collider.position.x + collider.width && player.position.x > collider.position.x - player.width)){
+                 if(player.position.x < collider.position.x + collider.width && player.position.x > collider.position.x - collider.width){
                      
                      if(player.position.y < collider.position.y){
+                         
                         player.isGrounded = true;
-                        
                         player.position.y = collider.position.y - (collider.height/2) + (player.height/2);
+                        
                      }
                     
                  } else player.isGrounded = false;    
        
             }
             
-           
-            
          }
+         
+         
          
           if(!player.isGrounded) player.set_yVelocity(player.get_yVelocity() - player.getGravity());
           else player.set_yVelocity(0);
@@ -101,9 +101,10 @@ int main(void)
         BeginDrawing();
 
             ClearBackground(RAYWHITE);
-          
+            
              
-             DrawRectangle(player.position.x, player.position.y, player.width, player.height, BLACK);
+             DrawRectanglePro(player.Rec, {0,0}, 0, BLACK);
+             
              DrawRectanglePro(platform1.rec, {0,0}, 0, GRAY);
              DrawRectanglePro(platform2.rec, {0,0}, 0, GRAY);
              DrawText(xposition, 100, 100, 30, BLACK); 

@@ -11,12 +11,15 @@ class Player{
     bool isGrounded;
     float width = 100;
     float height = 100;
+    Rectangle Rec;
    
     Player(){
         position.x = 300;
         position.y = 100;
         speed = 3;
         isGrounded = false;
+        
+        Rec = {position.x, position.y, width, height};
     }
  
     float getSpeed(){
