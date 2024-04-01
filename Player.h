@@ -14,7 +14,7 @@ class Player{
     Rectangle Rec;
    
     Player(){
-        position.x = 300;
+        position.x = 100;
         position.y = 100;
         speed = 3;
         isGrounded = false;

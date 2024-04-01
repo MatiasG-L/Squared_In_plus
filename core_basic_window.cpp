@@ -38,13 +38,15 @@ int main(void)
 
     // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
     Player player;
-    Platform platform1(200, 600, 150, 300);
-    Platform platform2(800, 650, 100, 300);
+    Platform platform1(100, 600, 150, 300);
+    Platform platform2(300, 650, 100, 300);
+    Platform platform3(500, 800, 700, 300);
 
 
     std::vector<Platform> collidables;
     collidables.push_back(platform1);
     collidables.push_back(platform2);
+    collidables.push_back(platform3);
     
     SetTargetFPS(60);
     
@@ -84,6 +86,13 @@ int main(void)
                  }else player.isGrounded = false;
        
             }
+             
+             if(player.position.x < collider.position.x + collider.width && player.position.y > collider.position.y - player.width/2 && player.position.x > collider.position.x + collider.width/2){
+                 player.position.x = collider.position.x + collider.width + 1;
+             }
+             if(player.position.x > collider.position.x - player.width && player.position.y > collider.position.y - player.width/2 && player.position.x < collider.position.x + collider.width/2){
+                 player.position.x = collider.position.x - player.width - 1;
+             }
             
                 
                 
@@ -115,7 +124,7 @@ int main(void)
                  DrawCircle(collider.position.x + collider.width, collider.position.y, 10, BLACK);
              }
              DrawRectanglePro(player.Rec, {0,0}, 0, BLACK);
-             DrawCircle(player.position.x , player.position.y , 30, WHITE);
+             DrawCircle(player.position.x , player.position.y , 10, WHITE);
              
              
              
