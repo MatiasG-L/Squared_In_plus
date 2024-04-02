@@ -38,15 +38,17 @@ int main(void)
 
     // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
     Player player;
-    Platform platform1(100, 600, 150, 300);
-    Platform platform2(300, 650, 100, 300);
-    Platform platform3(500, 800, 700, 300);
+    Platform platform1(100, 500, 150, 300);
+    Platform platform2(300, 750, 100, 300);
+    Platform platform3(650, 600, 200, 300);
+    Platform platform4(1000, 600, 150, 300);
 
 
     std::vector<Platform> collidables;
     collidables.push_back(platform1);
     collidables.push_back(platform2);
     collidables.push_back(platform3);
+    collidables.push_back(platform4);
     
     SetTargetFPS(60);
     
@@ -69,9 +71,19 @@ int main(void)
          player.Rec = {player.position.x, player.position.y, player.width, player.height};
          
          // collision
-         
+         std::vector<Platform> consider;
          for(Platform collider : collidables){
-            if(sqrt(pow(player.position.x - collider.position.x, 2) + pow(player.position.y - collider.position.y, 2))  < 300){
+              if(player.position.x < collider.position.x + collider.width && player.position.y > collider.position.y - player.width/2 && player.position.x > collider.position.x + collider.width/2){
+                 player.position.x = collider.position.x + collider.width + 1;
+             }
+             if(player.position.x > collider.position.x - player.width && player.position.y > collider.position.y - player.width/2 && player.position.x < collider.position.x + collider.width/2){
+                 player.position.x = collider.position.x - player.width - 1;
+             }
+             if(CheckCollisionRecs(player.Rec, collider.rec)) consider.push_back(collider);
+         }
+         
+          for(Platform collider : consider){
+                
              if((player.position.y > collider.position.y - collider.height/2)) {
                  
                  if(player.position.x < collider.position.x + collider.width && player.position.x > collider.position.x - player.width){
@@ -85,20 +97,13 @@ int main(void)
                     
                  }else player.isGrounded = false;
        
+             }
             }
-             
-             if(player.position.x < collider.position.x + collider.width && player.position.y > collider.position.y - player.width/2 && player.position.x > collider.position.x + collider.width/2){
-                 player.position.x = collider.position.x + collider.width + 1;
-             }
-             if(player.position.x > collider.position.x - player.width && player.position.y > collider.position.y - player.width/2 && player.position.x < collider.position.x + collider.width/2){
-                 player.position.x = collider.position.x - player.width - 1;
-             }
             
-                
-                
-            }
+            
+        
          
-         }
+         
          
          
          
