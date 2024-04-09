@@ -43,7 +43,7 @@ int main(void)
     Platform platform3(650, 600, 200, 300);
     Platform platform4(1000, 600, 150, 300);
 
-
+    //vector of platform objects to be considered for collision
     std::vector<Platform> collidables;
     collidables.push_back(platform1);
     collidables.push_back(platform2);
@@ -71,7 +71,9 @@ int main(void)
          player.Rec = {player.position.x, player.position.y, player.width, player.height};
          
          // collision
-         std::vector<Platform> consider;
+         
+         
+         // wall collisiion
          for(Platform collider : collidables){
               if(player.position.x < collider.position.x + collider.width && player.position.y > collider.position.y - player.width/2 && player.position.x > collider.position.x + collider.width/2){
                  player.position.x = collider.position.x + collider.width + 1;
@@ -79,26 +81,29 @@ int main(void)
              if(player.position.x > collider.position.x - player.width && player.position.y > collider.position.y - player.width/2 && player.position.x < collider.position.x + collider.width/2){
                  player.position.x = collider.position.x - player.width - 1;
              }
-             if(CheckCollisionRecs(player.Rec, collider.rec)) consider.push_back(collider);
+             
          }
          
-          for(Platform collider : consider){
-                
+         //floor collision
+         Platform collideCheck(NULL,NULL,NULL,NULL);
+          for(Platform collider : collidables){
+             
              if((player.position.y > collider.position.y - collider.height/2)) {
                  
                  if(player.position.x < collider.position.x + collider.width && player.position.x > collider.position.x - player.width){
                      
-                     if(CheckCollisionRecs(player.Rec, collider.rec) && player.position.y < collider.position.y){
-                         
-                        player.isGrounded = true;
-                        player.position.y = collider.position.y - (collider.height/2) + (player.height/2);
-                        
-                     }
+                     collideCheck = collider;
                     
-                 }else player.isGrounded = false;
+                 }
        
              }
             }
+            if(CheckCollisionRecs(player.Rec, collideCheck.rec) && player.position.y < collideCheck.position.y){
+                       
+                player.isGrounded = true;
+                player.position.y = collideCheck.position.y - (collideCheck.height/2) + (player.height/2);
+                        
+            } 
             
             
         
@@ -106,12 +111,12 @@ int main(void)
          
          
          
-         
+          // deals with velocity while the player is grounded
           if(!player.isGrounded) player.set_yVelocity(player.get_yVelocity() - player.getGravity());
           else player.set_yVelocity(0);
           player.position.y += -player.get_yVelocity();
          
-         
+         //outputs player varibles for debbuging
          sprintf(groundState, "Ground state: %d", player.isGrounded);   
          sprintf(xposition, "yVelocity: %f", player.get_yVelocity());   
          sprintf(yposition, "y:  %f", player.position.y);
@@ -127,7 +132,10 @@ int main(void)
                  DrawRectanglePro(collider.rec, {0,0}, 0, GRAY);
                  DrawCircle(collider.position.x , collider.position.y , 10, BLACK);
                  DrawCircle(collider.position.x + collider.width, collider.position.y, 10, BLACK);
+                 DrawCircle(collider.position.x + collider.width, collider.position.y + collider.height, 10, BLACK);
+                 DrawCircle(collider.position.x, collider.position.y + collider.height, 10, BLACK);
              }
+             
              DrawRectanglePro(player.Rec, {0,0}, 0, BLACK);
              DrawCircle(player.position.x , player.position.y , 10, WHITE);
              
