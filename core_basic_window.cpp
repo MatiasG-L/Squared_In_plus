@@ -85,27 +85,20 @@ int main(void)
          }
          
          //floor collision
-         Platform collideCheck(NULL,NULL,NULL,NULL);
-          for(Platform collider : collidables){
+        for(Platform collider : collidables){
              
+           
              if((player.position.y > collider.position.y - collider.height/2)) {
-                 
-                 if(player.position.x < collider.position.x + collider.width && player.position.x > collider.position.x - player.width){
-                     
-                     collideCheck = collider;
-                    
+                if(player.position.x < collider.position.x + collider.width && player.position.x > collider.position.x - player.width){
+                 if(CheckCollisionRecs(player.Rec, collider.rec) && player.position.y < collider.position.y){
+                    player.isGrounded = true;
+                    player.position.y = collider.position.y - (collider.height/2) + (player.height/2);
                  }
-       
-             }
+                }else {player.isGrounded = false;}
+              }
             }
-            if(CheckCollisionRecs(player.Rec, collideCheck.rec) && player.position.y < collideCheck.position.y){
-                       
-                player.isGrounded = true;
-                player.position.y = collideCheck.position.y - (collideCheck.height/2) + (player.height/2);
-                        
-            } 
             
-            
+             
         
          
          
