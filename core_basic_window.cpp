@@ -39,7 +39,7 @@ int main(void)
     // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
     Player player;
     Platform platform1(100, 500, 150, 300);
-    Platform platform2(300, 750, 100, 300);
+    Platform platform2(300, 500, 100, 300);
     Platform platform3(650, 600, 200, 300);
     Platform platform4(1000, 600, 150, 300);
 
@@ -85,18 +85,20 @@ int main(void)
          }
          
          //floor collision
+        bool grounded = false;
         for(Platform collider : collidables){
-             
-           
-             if((player.position.y > collider.position.y - collider.height/2)) {
-                if(player.position.x < collider.position.x + collider.width && player.position.x > collider.position.x - player.width){
-                 if(CheckCollisionRecs(player.Rec, collider.rec) && player.position.y < collider.position.y){
-                    player.isGrounded = true;
-                    player.position.y = collider.position.y - (collider.height/2) + (player.height/2);
+            
+             if(player.position.x < collider.position.x + collider.width && player.position.x > collider.position.x - player.width){
+                 if((player.position.y > collider.position.y - collider.height/2)) {
+                        if(CheckCollisionRecs(player.Rec, collider.rec) && player.position.y < collider.position.y){
+                            player.isGrounded = true;
+                            player.position.y = collider.position.y - (collider.height/2) + (player.height/2);
+                        }
+                        grounded = true;
                  }
-                }else {player.isGrounded = false;}
-              }
             }
+        }
+        if(!grounded) player.isGrounded = false;
             
              
         
