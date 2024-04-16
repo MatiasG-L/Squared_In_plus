@@ -1,3 +1,3 @@
-Meant to be used on Notepad++ for raylib
+A simple platformer game made with raylib 5
 
-*AMAZING GAME*
+*Meant to be used on Notepad++ for raylib*
