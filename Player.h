@@ -2,11 +2,13 @@
 
 class Player{
     private:
-    float speed;
+    float speed = 2;
     float yVelocity = 0;
     float Gravity = 1;
     
     public:
+    float Friction = 1;
+    float xVelocity = 0;
     Vector2 position;
     bool isGrounded;
     float width = 100;

@@ -16,7 +16,8 @@ Platform(float posX, float posY, float width, float height){
     this->height = height;
     position.x = posX;
     position.y = posY;
-    rec = {posX, posY, this->width, this->height};
+    
+    rec = {posX, posY, width, height};
 }
 
 

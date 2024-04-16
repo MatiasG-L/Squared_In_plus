@@ -38,17 +38,17 @@ int main(void)
 
     // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
     Player player;
-    Platform platform1(100, 500, 150, 300);
-    Platform platform2(300, 500, 100, 300);
-    Platform platform3(650, 600, 200, 300);
-    Platform platform4(1000, 600, 150, 300);
+    Platform platform1(0, 800, 1200, 50);
+    Platform platform2(200, 550, 100, 100);
+    Platform platform3(650, 600, 300, 300);
+    
 
     //vector of platform objects to be considered for collision
     std::vector<Platform> collidables;
     collidables.push_back(platform1);
     collidables.push_back(platform2);
     collidables.push_back(platform3);
-    collidables.push_back(platform4);
+
     
     SetTargetFPS(60);
     
@@ -61,42 +61,55 @@ int main(void)
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
         // Update
-        //----------------------------------------------------------------------------------
-         if (IsKeyDown(KEY_RIGHT)) player.position.x += player.getSpeed();
-         if(IsKeyDown(KEY_LEFT)) player.position.x -= player.getSpeed();
-         if(IsKeyPressed(KEY_UP) && player.isGrounded) {player.isGrounded = false; player.set_yVelocity(20);}
+        //---------------------------------------------------------------------------------
+         if (IsKeyDown(KEY_RIGHT)) player.xVelocity = player.getSpeed();
+         else if(IsKeyDown(KEY_LEFT)) player.xVelocity = -player.getSpeed();
+         else if(player.xVelocity > 0) player.xVelocity -= player.Friction;
+         else if(player.xVelocity < 0) player.xVelocity += player.Friction;
+         
+         if(IsKeyPressed(KEY_UP) && player.isGrounded) {player.set_yVelocity(20);player.isGrounded = false;}
          
          if(IsKeyPressed(KEY_R) ) {player.position = {200,100}; player.isGrounded = false; player.set_yVelocity(0);}
          
          player.Rec = {player.position.x, player.position.y, player.width, player.height};
          
-         // collision
          
          
-         // wall collisiion
-         for(Platform collider : collidables){
-              if(player.position.x < collider.position.x + collider.width && player.position.y > collider.position.y - player.width/2 && player.position.x > collider.position.x + collider.width/2){
-                 player.position.x = collider.position.x + collider.width + 1;
-             }
-             if(player.position.x > collider.position.x - player.width && player.position.y > collider.position.y - player.width/2 && player.position.x < collider.position.x + collider.width/2){
-                 player.position.x = collider.position.x - player.width - 1;
-             }
-             
-         }
+      
          
-         //floor collision
+        // collision
         bool grounded = false;
         for(Platform collider : collidables){
             
+            // wall collision
+             if(player.position.x < collider.position.x + collider.width && (player.position.y > collider.position.y - player.width/2 && player.position.y < collider.position.y + collider.height - 40) && player.position.x > collider.position.x + collider.width/2){
+                 player.position.x = collider.position.x + collider.width + 1;
+             }
+             if(player.position.x > collider.position.x - player.width && (player.position.y > collider.position.y - player.width/2 && player.position.y < collider.position.y + collider.height - 40) && player.position.x < collider.position.x + collider.width/2){
+                 player.position.x = collider.position.x - player.width - 1;
+             }
+             
+            //floor collision
              if(player.position.x < collider.position.x + collider.width && player.position.x > collider.position.x - player.width){
-                 if((player.position.y > collider.position.y - collider.height/2)) {
-                        if(CheckCollisionRecs(player.Rec, collider.rec) && player.position.y < collider.position.y){
-                            player.isGrounded = true;
-                            player.position.y = collider.position.y - (collider.height/2) + (player.height/2);
-                        }
-                        grounded = true;
+                 if((player.position.y > collider.position.y - player.height-1 && player.position.y < collider.position.y + collider.height/2)) {
+                     if(CheckCollisionRecs(player.Rec, collider.rec)){
+                        player.position.y = collider.position.y - player.height;
+                        player.isGrounded = true;
+                     }
+                     grounded = true;
                  }
-            }
+             }
+            
+            //roof collision
+            if(player.position.x < collider.position.x + collider.width && player.position.x > collider.position.x - player.width){
+                 if((player.position.y > collider.position.y + collider.height -20)) {
+                     if(CheckCollisionRecs(player.Rec, collider.rec)){
+                        player.position.y = collider.position.y + collider.height;
+                        player.set_yVelocity(0);
+                     }
+                 }
+             }
+            
         }
         if(!grounded) player.isGrounded = false;
             
@@ -106,10 +119,12 @@ int main(void)
          
          
          
-          // deals with velocity while the player is grounded
-          if(!player.isGrounded) player.set_yVelocity(player.get_yVelocity() - player.getGravity());
+          // deals with velocity while the player isn't grounded
+          if(!player.isGrounded) player.set_yVelocity(player.get_yVelocity()-player.getGravity());
           else player.set_yVelocity(0);
           player.position.y += -player.get_yVelocity();
+          player.position.x += player.xVelocity;
+            
          
          //outputs player varibles for debbuging
          sprintf(groundState, "Ground state: %d", player.isGrounded);   
