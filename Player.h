@@ -7,18 +7,22 @@ class Player{
     float Gravity = 1;
     
     public:
-    float Friction = 1;
-    float xVelocity = 0;
-    Vector2 position;
-    bool isGrounded;
+    // player attributes
     float width = 100;
     float height = 100;
+    float Friction = 1.15;
     Rectangle Rec;
+    float jumpStr = 20;
+    // player state
+    float xVelocity = 0;
+    bool isGrounded; 
+    Vector2 position;
+
    
     Player(){
         position.x = 100;
         position.y = 100;
-        speed = 3;
+        speed = 2;
         isGrounded = false;
         
         Rec = {position.x, position.y, width, height};

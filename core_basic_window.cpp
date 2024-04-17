@@ -26,7 +26,7 @@ int main(void)
 {
     // Initialization
     //--------------------------------------------------------------------------------------
-    const int screenWidth = 1200;
+    const int screenWidth = 1600;
     const int screenHeight = 900;
     char xposition[20];
     char yposition[20];
@@ -34,22 +34,21 @@ int main(void)
  
     
 
-    InitWindow(screenWidth, screenHeight, " SQUARED IN ");
+    InitWindow(screenWidth, screenHeight, " SQUARED IN++");
 
     // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
     Player player;
-    Platform platform1(0, 800, 1200, 50);
-    Platform platform2(200, 550, 100, 100);
-    Platform platform3(650, 600, 300, 300);
+    Platform platform1(0, 800, 400, 100);
+    Platform platform2(1000, 500, 200, 80);
+    Platform platform3(400, 600, 200, 300);
     
 
-    //vector of platform objects to be considered for collision
+    //vector of platform objects to be checked for collision
     std::vector<Platform> collidables;
     collidables.push_back(platform1);
     collidables.push_back(platform2);
     collidables.push_back(platform3);
 
-    
     SetTargetFPS(60);
     
     player.setSpeed(10);
@@ -60,14 +59,16 @@ int main(void)
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
-        // Update
-        //---------------------------------------------------------------------------------
+    // Update
+      
+        
+        // player input 
          if (IsKeyDown(KEY_RIGHT)) player.xVelocity = player.getSpeed();
          else if(IsKeyDown(KEY_LEFT)) player.xVelocity = -player.getSpeed();
-         else if(player.xVelocity > 0) player.xVelocity -= player.Friction;
-         else if(player.xVelocity < 0) player.xVelocity += player.Friction;
+         else if(player.xVelocity > 0) player.xVelocity /= player.Friction;
+         else if(player.xVelocity < 0) player.xVelocity /= player.Friction;
          
-         if(IsKeyPressed(KEY_UP) && player.isGrounded) {player.set_yVelocity(20);player.isGrounded = false;}
+         if(IsKeyDown(KEY_UP) && player.isGrounded) {player.set_yVelocity(player.jumpStr);player.isGrounded = false;}
          
          if(IsKeyPressed(KEY_R) ) {player.position = {200,100}; player.isGrounded = false; player.set_yVelocity(0);}
          
@@ -119,10 +120,10 @@ int main(void)
          
          
          
-          // deals with velocity while the player isn't grounded
-          if(!player.isGrounded) player.set_yVelocity(player.get_yVelocity()-player.getGravity());
+          // deals with velocity 
+          if(!player.isGrounded) player.set_yVelocity(player.get_yVelocity() - player.getGravity());
           else player.set_yVelocity(0);
-          player.position.y += -player.get_yVelocity();
+          player.position.y -= player.get_yVelocity();
           player.position.x += player.xVelocity;
             
          
@@ -132,8 +133,8 @@ int main(void)
          sprintf(yposition, "y:  %f", player.position.y);
             
             
-        // Draw
-        //----------------------------------------------------------------------------------
+      // Draw
+
         BeginDrawing();
 
             ClearBackground(RAYWHITE);
