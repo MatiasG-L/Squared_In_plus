@@ -1,13 +1,10 @@
 /*******************************************************************************************
 *
-*   raylib [textures] example - Texture source and destination rectangles
+*   SQUARED IN REMASTERED IN C++, USING: RAYLIB 5.0
 *
-*   Example originally created with raylib 1.3, last time updated with raylib 1.3
-*
-*   Example licensed under an unmodified zlib/libpng license, which is an OSI-certified,
-*   BSD-like license that allows static linking with closed source software
-*
-*   Copyright (c) 2015-2024 Ramon Santamaria (@raysan5)   
+*   IM SOOO COOL (MISIRABLE)  
+*   
+*   Challange: No tutorials or videos all logic and gameplay must be original (documentation isnt included) 
 *
 ********************************************************************************************/
 
@@ -39,7 +36,7 @@ int main(void)
     // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
     Player player;
     Platform platform1(0, 800, 400, 100);
-    Platform platform2(1000, 500, 200, 80);
+    Platform platform2(1000, 500, 200, 100);
     Platform platform3(400, 600, 200, 300);
     
 
@@ -49,6 +46,7 @@ int main(void)
     collidables.push_back(platform2);
     collidables.push_back(platform3);
 
+    //limits fps for more univarsal experience
     SetTargetFPS(60);
     
     player.setSpeed(10);
@@ -60,7 +58,29 @@ int main(void)
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
     // Update
-      
+        
+        
+        //creates a platform at mouse X,Y
+        if(IsKeyPressed(KEY_P)){
+            Platform CST(GetMouseX()-CST.width/2, GetMouseY()-CST.height/2, 100, 100);
+            collidables.push_back(CST);
+        }
+        
+        //allows dragging of objects
+        for(int i = 0; i < collidables.size(); i++){
+           if(IsMouseButtonDown(0)){
+               if(GetMouseX() < collidables[i].position.x + collidables[i].width && GetMouseX() > collidables[i].position.x && GetMouseY() < collidables[i].position.y + collidables[i].height && GetMouseY() > collidables[i].position.y){     
+                   collidables[i].position.x = (GetMouseX() + (collidables[i].position.x - GetMouseX())) + GetMouseDelta().x;
+                   collidables[i].position.y = (GetMouseY() + (collidables[i].position.y - GetMouseY())) + GetMouseDelta().y;       
+               }
+           }
+        }
+        
+        
+        
+        
+        
+        
         
         // player input 
          if (IsKeyDown(KEY_RIGHT)) player.xVelocity = player.getSpeed();
@@ -139,19 +159,24 @@ int main(void)
 
             ClearBackground(RAYWHITE);
             
-             for(Platform collider : collidables){
-                 DrawRectanglePro(collider.rec, {0,0}, 0, GRAY);
-                 DrawCircle(collider.position.x , collider.position.y , 10, BLACK);
-                 DrawCircle(collider.position.x + collider.width, collider.position.y, 10, BLACK);
-                 DrawCircle(collider.position.x + collider.width, collider.position.y + collider.height, 10, BLACK);
-                 DrawCircle(collider.position.x, collider.position.y + collider.height, 10, BLACK);
+            //draws a vector of plafrom objects
+             for(int i = 0; i < collidables.size(); i++){
+                 //updates the objects rec for accurate visuals
+                 collidables[i].rec = {collidables[i].position.x, collidables[i].position.y, collidables[i].width, collidables[i].height};
+                 
+                 DrawRectanglePro(collidables[i].rec, {0,0}, 0, GRAY);
+                 DrawCircle(collidables[i].position.x , collidables[i].position.y , 10, BLACK);
+                 DrawCircle(collidables[i].position.x + collidables[i].width, collidables[i].position.y, 10, BLACK);
+                 DrawCircle(collidables[i].position.x + collidables[i].width, collidables[i].position.y + collidables[i].height, 10, BLACK);
+                 DrawCircle(collidables[i].position.x, collidables[i].position.y + collidables[i].height, 10, BLACK);
              }
              
+             //draws player
              DrawRectanglePro(player.Rec, {0,0}, 0, BLACK);
              DrawCircle(player.position.x , player.position.y , 10, WHITE);
              
              
-             
+             //draws player state text
              DrawText(xposition, 100, 100, 30, BLACK); 
              DrawText(yposition, 100, 200, 30, BLACK); 
              DrawText(groundState, 100, 300, 30, BLACK);
