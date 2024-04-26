@@ -96,7 +96,7 @@ int main(void)
                }
                
            }
-           if(!reSize && !canPlace && !isDrag) SetMouseCursor(1); // sets cursor to normal if player cant place and drag
+           if(!reSize && !canPlace && !isDrag) SetMouseCursor(1); // sets cursor to normal if player cant place and drag and resize
            else if(!reSize && !isDrag) SetMouseCursor(3); // sets the cursor to place if you can place
         }
         
