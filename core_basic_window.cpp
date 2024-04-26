@@ -45,6 +45,9 @@ int main(void)
     collidables.push_back(platform1);
     collidables.push_back(platform2);
     collidables.push_back(platform3);
+    
+    //boolean in charge of ensuring the player can place squares
+    bool canPlace = false;
 
     //limits fps for more univarsal experience
     SetTargetFPS(60);
@@ -60,21 +63,43 @@ int main(void)
     // Update
         
         
+        //toggles the ability to place blocks
+        if(IsKeyPressed(KEY_P) && !canPlace) canPlace = true;
+        else if(IsKeyPressed(KEY_P)) canPlace = false;
+        
         //creates a platform at mouse X,Y
-        if(IsKeyPressed(KEY_P)){
+        if(IsMouseButtonDown(0) && canPlace){
             Platform CST(GetMouseX()-CST.width/2, GetMouseY()-CST.height/2, 100, 100);
             collidables.push_back(CST);
+            canPlace = false;
         }
         
-        //allows dragging of objects
+        
+        //allows dragging and resizing of objects
+        bool reSize = false;
+        bool isDrag = false;
         for(int i = 0; i < collidables.size(); i++){
            if(IsMouseButtonDown(0)){
+               // handles the dragging
                if(GetMouseX() < collidables[i].position.x + collidables[i].width && GetMouseX() > collidables[i].position.x && GetMouseY() < collidables[i].position.y + collidables[i].height && GetMouseY() > collidables[i].position.y){     
+                   isDrag = true;
+                   SetMouseCursor(9);
                    collidables[i].position.x = (GetMouseX() + (collidables[i].position.x - GetMouseX())) + GetMouseDelta().x;
                    collidables[i].position.y = (GetMouseY() + (collidables[i].position.y - GetMouseY())) + GetMouseDelta().y;       
                }
+               // handles the resizing
+               if(GetMouseX() < collidables[i].position.x + collidables[i].width + 20 && GetMouseX() > collidables[i].position.x + collidables[i].width - 20 && GetMouseY() < collidables[i].position.y + collidables[i].height + 20 && GetMouseY() > collidables[i].position.y + collidables[i].height - 20){
+                   reSize = true;         
+                   collidables[i].width += GetMouseDelta().x; 
+                   collidables[i].height += GetMouseDelta().y; 
+                   SetMouseCursor(7);
+               }
+               
            }
+           if(!reSize && !canPlace && !isDrag) SetMouseCursor(1); // sets cursor to normal if player cant place and drag
+           else if(!reSize && !isDrag) SetMouseCursor(3); // sets the cursor to place if you can place
         }
+        
         
         
         
