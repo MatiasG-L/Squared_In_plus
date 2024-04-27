@@ -80,6 +80,7 @@ int main(void)
         bool isDrag = false;
         for(int i = 0; i < collidables.size(); i++){
            if(IsMouseButtonDown(0)){
+               
                // handles the dragging
                if(GetMouseX() < collidables[i].position.x + collidables[i].width && GetMouseX() > collidables[i].position.x && GetMouseY() < collidables[i].position.y + collidables[i].height && GetMouseY() > collidables[i].position.y){     
                    isDrag = true;
@@ -98,8 +99,16 @@ int main(void)
            }
            if(!reSize && !canPlace && !isDrag) SetMouseCursor(1); // sets cursor to normal if player cant place and drag and resize
            else if(!reSize && !isDrag) SetMouseCursor(3); // sets the cursor to place if you can place
+           
+           if(IsMouseButtonDown(1)){
+                if(GetMouseX() < collidables[i].position.x + collidables[i].width && GetMouseX() > collidables[i].position.x && GetMouseY() < collidables[i].position.y + collidables[i].height && GetMouseY() > collidables[i].position.y){
+                    collidables.erase(collidables.begin() + i);
+                    
+                }
+           }
         }
         
+   
         
         
         
