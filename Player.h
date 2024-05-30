@@ -13,6 +13,7 @@ class Player{
     float Friction = 1.15;
     Rectangle Rec;
     float jumpStr = 20;
+    float acceleration = 0.5;
     // player state
     float xVelocity = 0;
     bool isGrounded; 
