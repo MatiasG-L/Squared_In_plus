@@ -53,16 +53,28 @@ int main(void)
     std::vector<Spike> spikes;
     spikes.push_back(spike1);
     
-    //boolean in charge of ensuring the player can place squares
+    //boolean in charge of ensuring the player can place squares or spikes
     bool canPlace = false;
+    bool canPlaceSpk = false;
 
     //limits fps for more univarsal experience
     SetTargetFPS(60);
     
+    //setting the player speed
     player.setSpeed(10);
-
+      //variables used for the dragging and resizing 
       bool dragging = false;
+      bool resizing = false;
+      //variables used for setting the mouse cursor while draggin or resizing
+      bool reSize = false;
+      bool isDrag = false;
+      //variables used to hold the index of the object thats being dragged
       int index = -1;
+      int index2 = -1;
+      //variables used for the dragging and resizing spikes
+      bool dragging2 = false;
+      bool resizing2 = false;
+      
     //--------------------------------------------------------------------------------------
 
     // Main game loop
@@ -74,7 +86,7 @@ int main(void)
         //toggles the ability to place blocks
         if(IsKeyPressed(KEY_P) && !canPlace) canPlace = true;
         else if(IsKeyPressed(KEY_P)) canPlace = false;
-        
+          
         //creates a platform at mouse X,Y
         if(IsMouseButtonDown(0) && canPlace){
             Platform CST(GetMouseX()-CST.width/2, GetMouseY()-CST.height/2, 100, 100);
@@ -82,10 +94,19 @@ int main(void)
             canPlace = false;
         }
         
+        //toggles the ability to place spikes
+        if(IsKeyPressed(KEY_O) && !canPlaceSpk) canPlaceSpk = true;
+        else if(IsKeyPressed(KEY_O)) canPlaceSpk = false;   
+        
+        //creates a platform at mouse X,Y
+        if(IsMouseButtonDown(0) && canPlaceSpk){
+            Spike CST(100, 100, {GetMouseX(), GetMouseY()});
+            spikes.push_back(CST);
+            canPlaceSpk = false;
+        }
+        
         
         //allows dragging and resizing of objects
-        bool reSize = false;
-        bool isDrag = false;
         for(int i = 0; i < collidables.size(); i++){
             
             // handles the dragging
@@ -94,29 +115,36 @@ int main(void)
                  dragging = true;
                  index = i;
              }
-             if(IsMouseButtonReleased(0)){
+             if(IsMouseButtonReleased(0) && dragging){
                  dragging = false;
                  index = -1;
+                 isDrag = false;
              }     
              if(dragging){
                    SetMouseCursor(9);
-                   collidables[index].position.x += GetMouseDelta().x/3;
-                   collidables[index].position.y += GetMouseDelta().y/3;
+                   collidables[index].position.x += GetMouseDelta().x/collidables.size();
+                   collidables[index].position.y += GetMouseDelta().y/collidables.size();
              } 
-             
-           if(IsMouseButtonDown(0)){
                // handles the resizing
-               if(GetMouseX() < collidables[i].position.x + collidables[i].width + 20 && GetMouseX() > collidables[i].position.x + collidables[i].width - 20 && GetMouseY() < collidables[i].position.y + collidables[i].height + 20 && GetMouseY() > collidables[i].position.y + collidables[i].height - 20){
-                   reSize = true;         
-                   collidables[i].width += GetMouseDelta().x; 
-                   collidables[i].height += GetMouseDelta().y; 
-                   SetMouseCursor(7);
+               if(GetMouseX() < collidables[i].position.x + collidables[i].width + 20 && GetMouseX() > collidables[i].position.x + collidables[i].width - 20 && GetMouseY() < collidables[i].position.y + collidables[i].height + 20 && GetMouseY() > collidables[i].position.y + collidables[i].height - 20 && IsMouseButtonPressed(0)){
+                   reSize = true;   
+                   resizing = true;
+                   index = i;
                }
-               
-           }
+               if(IsMouseButtonReleased(0) && resizing){
+                 resizing = false;
+                 index = -1;
+                 reSize = false;
+               } 
+               if(resizing){
+                SetMouseCursor(7);
+                collidables[index].width += GetMouseDelta().x/collidables.size(); 
+                collidables[index].height += GetMouseDelta().y/collidables.size();
+               } 
+          //handles over laping cursor instructions
            if(!reSize && !canPlace && !isDrag) SetMouseCursor(1); // sets cursor to normal if player cant place and drag and resize
            else if(!reSize && !isDrag) SetMouseCursor(3); // sets the cursor to place if you can place
-           
+           //deletes the block
            if(IsMouseButtonDown(1)){
                 if(GetMouseX() < collidables[i].position.x + collidables[i].width && GetMouseX() > collidables[i].position.x && GetMouseY() < collidables[i].position.y + collidables[i].height && GetMouseY() > collidables[i].position.y){
                     collidables.erase(collidables.begin() + i);
@@ -125,37 +153,51 @@ int main(void)
            }
         }
         
-   //allows dragging and resizing of spikes
-        bool reSize2 = false;
-        bool isDrag2 = false;
-        for(int i = 0; i < spikes.size(); i++){
-           if(IsMouseButtonDown(0)){
-               
+        //allows dragging and resizing of spikes
+        for(int i = 0; i < spikes.size(); i++){           
                // handles the dragging
-               if(GetMouseX() < spikes[i].position.x + spikes[i].width && GetMouseX() > spikes[i].position.x && GetMouseY() < spikes[i].position.y + spikes[i].height && GetMouseY() > spikes[i].position.y){     
-                   isDrag2 = true;
-                   SetMouseCursor(9);
-                   spikes[i].position.x = (GetMouseX() + (spikes[i].position.x - GetMouseX())) + GetMouseDelta().x;
-                   spikes[i].position.y = (GetMouseY() + (spikes[i].position.y - GetMouseY())) + GetMouseDelta().y;       
-               }
-               // handles the resizing
-               if(GetMouseX() < spikes[i].position.x + spikes[i].width + 20 && GetMouseX() > spikes[i].position.x + spikes[i].width - 20 && GetMouseY() < spikes[i].position.y + spikes[i].height + 20 && GetMouseY() > spikes[i].position.y + spikes[i].height - 20){
-                   reSize2 = true;         
-                   spikes[i].width += GetMouseDelta().x; 
-                   spikes[i].height += GetMouseDelta().y; 
-                   SetMouseCursor(7);
+               if(CheckCollisionPointTriangle({GetMouseX(),GetMouseY()},{spikes[i].position.x, spikes[i].position.y-spikes[i].height/2}, {spikes[i].position.x - spikes[i].width/2, spikes[i].position.y+spikes[i].height/2},{spikes[i].position.x + spikes[i].width/2, spikes[i].position.y+spikes[i].height/2}) && IsMouseButtonPressed(0)){     
+                    isDrag = true;
+                    dragging2 = true;
+                    index2 = i;     
                }
                
+               if(IsMouseButtonReleased(0) && dragging2){
+                 dragging2 = false;
+                 index2 = -1;
+                 isDrag = false;
+               }     
+               if(dragging2){
+                   SetMouseCursor(9);
+                   spikes[index2].position.x += GetMouseDelta().x/spikes.size();
+                   spikes[index2].position.y += GetMouseDelta().y/spikes.size();
+               }
+               
+               // handles the resizing
+               if(GetMouseX() < spikes[i].position.x + spikes[i].width/2 + 20 && GetMouseX() > spikes[i].position.x + spikes[i].width/2 - 20 && GetMouseY() < spikes[i].position.y + spikes[i].height/2 + 20 && GetMouseY() > spikes[i].position.y + spikes[i].height/2 - 20 && IsMouseButtonPressed(0)){
+                   reSize = true;
+                   resizing2 = true;
+                   index2 = i;                     
+               }     
+               if(IsMouseButtonReleased(0) && resizing2){
+                 resizing2 = false;
+                 index2 = -1;
+                 reSize = false;
+               }     
+               if(resizing2){
+                   SetMouseCursor(7);
+                   spikes[index2].width += GetMouseDelta().x*2/spikes.size(); 
+                   spikes[index2].height += GetMouseDelta().y*2/spikes.size(); 
+               }
+               
+           //handles over laping cursor instructions
+           if(!reSize && !canPlace && !isDrag) SetMouseCursor(1); // sets cursor to normal if player cant place and drag and resize
+           else if(!reSize && !isDrag) SetMouseCursor(3); // sets the cursor to place if you can place
+           //deletes spike with a right click
+           if(CheckCollisionPointTriangle({GetMouseX(),GetMouseY()},{spikes[i].position.x, spikes[i].position.y-spikes[i].height/2}, {spikes[i].position.x - spikes[i].width/2, spikes[i].position.y+spikes[i].height/2},{spikes[i].position.x + spikes[i].width/2, spikes[i].position.y+spikes[i].height/2}) && IsMouseButtonPressed(1)){
+                spikes.erase(spikes.begin() + i);      
            }
-           if(!reSize2 && !canPlace && !isDrag2) SetMouseCursor(1); // sets cursor to normal if player cant place and drag and resize
-           else if(!reSize2 && !isDrag2) SetMouseCursor(3); // sets the cursor to place if you can place
            
-           if(IsMouseButtonDown(1)){
-                if(GetMouseX() < spikes[i].position.x + spikes[i].width && GetMouseX() > spikes[i].position.x && GetMouseY() < spikes[i].position.y + spikes[i].height && GetMouseY() > spikes[i].position.y){
-                    spikes.erase(spikes.begin() + i);
-                    
-                }
-           }
         }
         
         
@@ -255,6 +297,7 @@ int main(void)
              //draws a vector of spike of spike objects
              for(int i = 0; i < spikes.size(); i++){
                  DrawTriangle({spikes[i].position.x, spikes[i].position.y-spikes[i].height/2}, {spikes[i].position.x - spikes[i].width/2, spikes[i].position.y+spikes[i].height/2},  {spikes[i].position.x + spikes[i].width/2, spikes[i].position.y+spikes[i].height/2}, BLACK);
+                 DrawCircle(spikes[i].position.x, spikes[i].position.y, 10, WHITE);
              }    
              
              //draws player
