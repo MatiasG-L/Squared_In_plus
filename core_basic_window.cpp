@@ -145,7 +145,7 @@ int main(void)
            if(!reSize && !canPlace && !isDrag) SetMouseCursor(1); // sets cursor to normal if player cant place and drag and resize
            else if(!reSize && !isDrag) SetMouseCursor(3); // sets the cursor to place if you can place
            //deletes the block
-           if(IsMouseButtonDown(1)){
+           if(IsMouseButtonPressed(1)){
                 if(GetMouseX() < collidables[i].position.x + collidables[i].width && GetMouseX() > collidables[i].position.x && GetMouseY() < collidables[i].position.y + collidables[i].height && GetMouseY() > collidables[i].position.y){
                     collidables.erase(collidables.begin() + i);
                     
@@ -191,7 +191,7 @@ int main(void)
                }
                
            //handles over laping cursor instructions
-           if(!reSize && !canPlace && !isDrag) SetMouseCursor(1); // sets cursor to normal if player cant place and drag and resize
+           if(!reSize && !(canPlace || canPlaceSpk) && !isDrag) SetMouseCursor(1); // sets cursor to normal if player cant place and drag and resize
            else if(!reSize && !isDrag) SetMouseCursor(3); // sets the cursor to place if you can place
            //deletes spike with a right click
            if(CheckCollisionPointTriangle({GetMouseX(),GetMouseY()},{spikes[i].position.x, spikes[i].position.y-spikes[i].height/2}, {spikes[i].position.x - spikes[i].width/2, spikes[i].position.y+spikes[i].height/2},{spikes[i].position.x + spikes[i].width/2, spikes[i].position.y+spikes[i].height/2}) && IsMouseButtonPressed(1)){
@@ -257,13 +257,17 @@ int main(void)
             
         }
         if(!grounded) player.isGrounded = false;
-            
-             
         
-         
-         
-         
-         
+        //spike collision
+        for(Spike spike : spikes){
+            if(CheckCollisionPointRec(spike.corners.Top, player.Rec) || CheckCollisionPointTriangle(player.corners.BottomRight, spike.corners.Top, spike.corners.BottomLeft, spike.corners.BottomRight) || CheckCollisionPointTriangle(player.corners.BottomLeft, spike.corners.Top, spike.corners.BottomLeft, spike.corners.BottomRight)){
+                player.position = {200,100};
+                player.isGrounded = false;
+                player.set_yVelocity(0);
+            }
+        }    
+             
+
           // deals with velocity 
           if(!player.isGrounded) player.set_yVelocity(player.get_yVelocity() - player.getGravity());
           else player.set_yVelocity(0);
@@ -296,12 +300,15 @@ int main(void)
              }
              //draws a vector of spike of spike objects
              for(int i = 0; i < spikes.size(); i++){
+                 spikes[i].corners = {{spikes[i].position.x, spikes[i].position.y-spikes[i].height/2}, {spikes[i].position.x - spikes[i].width/2, spikes[i].position.y+spikes[i].height/2},  {spikes[i].position.x + spikes[i].width/2, spikes[i].position.y+spikes[i].height/2}};
+                 
                  DrawTriangle({spikes[i].position.x, spikes[i].position.y-spikes[i].height/2}, {spikes[i].position.x - spikes[i].width/2, spikes[i].position.y+spikes[i].height/2},  {spikes[i].position.x + spikes[i].width/2, spikes[i].position.y+spikes[i].height/2}, BLACK);
                  DrawCircle(spikes[i].position.x, spikes[i].position.y, 10, WHITE);
              }    
              
              //draws player
              DrawRectanglePro(player.Rec, {0,0}, 0, BLACK);
+             player.corners = {{player.position.x, player.position.y}, {player.position.x + player.width, player.position.y}, {player.position.x + player.width, player.position.y + player.height}, {player.position.x, player.position.y + player.height}};
              DrawCircle(player.position.x , player.position.y , 10, WHITE);
              
              //draws player state text

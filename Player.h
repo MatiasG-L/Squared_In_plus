@@ -18,8 +18,14 @@ class Player{
     float xVelocity = 0;
     bool isGrounded; 
     Vector2 position;
-
+    typedef struct Verticies{
+        Vector2 TopLeft;
+        Vector2 TopRight;
+        Vector2 BottomRight;
+        Vector2 BottomLeft;
+    } Verticies;
    
+    Verticies corners;   
     Player(){
         position.x = 100;
         position.y = 100;
@@ -27,6 +33,8 @@ class Player{
         isGrounded = false;
         
         Rec = {position.x, position.y, width, height};
+        
+        corners = {{position.x, position.y}, {position.x + width, position.y}, {position.x + width, position.y + height}, {position.x, position.y + height}};
     }
  
     float getSpeed(){
