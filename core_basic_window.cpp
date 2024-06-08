@@ -1,4 +1,4 @@
-/**************************************************************************************************************
+/*****************************************************************************************************************************************
 *
 *   SQUARED IN REMASTERED IN C++, USING: RAYLIB 5.0
 *
@@ -6,7 +6,7 @@
 *   
 *   Challange: No tutorials or videos, all logic and gameplay must be original and made by me (raylib documentation isnt included) 
 *
-**************************************************************************************************************/
+*******************************************************************************************************************************************/
 
 
 
@@ -102,7 +102,6 @@ int main(void)
         //toggles the ability to place blocks
         if(IsKeyPressed(KEY_P) && !canPlace) canPlace = true;
         else if(IsKeyPressed(KEY_P)) canPlace = false;
-          
         //creates a platform at mouse X,Y
         if(IsMouseButtonDown(0) && canPlace){
             Platform CST(GetMouseX()-CST.width/2, GetMouseY()-CST.height/2, 100, 100);
@@ -173,7 +172,6 @@ int main(void)
                     dragging2 = true;
                     index2 = i;     
                }
-               
                if(IsMouseButtonReleased(0) && dragging2){
                  dragging2 = false;
                  index2 = -1;
@@ -208,8 +206,7 @@ int main(void)
            //deletes spike with a right click
            if(CheckCollisionPointTriangle({GetMouseX(),GetMouseY()},{spikes[i].position.x, spikes[i].position.y-spikes[i].height/2}, {spikes[i].position.x - spikes[i].width/2, spikes[i].position.y+spikes[i].height/2},{spikes[i].position.x + spikes[i].width/2, spikes[i].position.y+spikes[i].height/2}) && IsMouseButtonPressed(1)){
                 spikes.erase(spikes.begin() + i);      
-           }
-           
+           } 
         }
         
         // player input for moving 
@@ -219,15 +216,12 @@ int main(void)
          else if(player.xVelocity < 0) player.xVelocity /= player.Friction;
          
          //player input for jump
-         if(IsKeyDown(KEY_UP) && player.isGrounded) {player.set_yVelocity(player.jumpStr);player.isGrounded = false;}
+         if(IsKeyDown(KEY_UP) && player.isGrounded) {player.set_yVelocity(player.jumpStr * abs(player.xVelocity));player.isGrounded = false;}
          //player input to reset
          if(IsKeyPressed(KEY_R) ) {player.position = {200,100}; player.isGrounded = false; player.set_yVelocity(0);}
          //updating the player Rec to have accurate visuals and collosion
          player.Rec = {player.position.x, player.position.y, player.width, player.height};
-         
-         
-         
-      
+              
          
         // collision
         bool grounded = false;
@@ -260,8 +254,7 @@ int main(void)
                         player.set_yVelocity(0);
                      }
                  }
-             }
-            
+             }  
         }
         if(!grounded) player.isGrounded = false;
         
@@ -274,7 +267,6 @@ int main(void)
             }
         }    
              
-
           // moves the player based on y velocity which is calculated when the player is not grounded 
           if(!player.isGrounded) player.set_yVelocity(player.get_yVelocity() - player.getGravity());
           else player.set_yVelocity(0);
@@ -286,8 +278,7 @@ int main(void)
          sprintf(groundState, "Ground state: %d", player.isGrounded);   
          sprintf(xposition, "yVelocity: %f", player.get_yVelocity());   
          sprintf(yposition, "y:  %f", player.position.y);
-            
-            
+                
       // Draw, where the scene actually gets rendered and drawn out
 
         BeginDrawing();
@@ -332,8 +323,6 @@ int main(void)
         //----------------------------------------------------------------------------------
     }
      
-     
-
     // De-Initialization
     //--------------------------------------------------------------------------------------
       // Texture unloading
