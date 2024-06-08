@@ -1,12 +1,23 @@
-/*******************************************************************************************
+/**************************************************************************************************************
 *
 *   SQUARED IN REMASTERED IN C++, USING: RAYLIB 5.0
 *
 *   IM SOOO COOL (MISIRABLE)  
 *   
-*   Challange: No tutorials or videos all logic and gameplay must be original (documentation isnt included) 
+*   Challange: No tutorials or videos, all logic and gameplay must be original and made by me (raylib documentation isnt included) 
 *
-********************************************************************************************/
+**************************************************************************************************************/
+
+
+
+     //---------------------------------------------------------------------------//
+    //  NOTE:                                                                    //            
+   //     when subtracting from an objects position on the y axis; it will      //
+  //      appear to be moving up and vise versa meaning that, up is a          // 
+ //       lower value or negative, while down is a positive or higher number  // 
+//---------------------------------------------------------------------------//
+
+
 
 #include <vector>
 #include <string>
@@ -24,18 +35,23 @@ int main(void)
 {
     // Initialization
     //--------------------------------------------------------------------------------------
+    //creating variables to set the screen dimentions to
     const int screenWidth = 1600;
     const int screenHeight = 900;
+    //varibles for the debugging text
     char xposition[20];
     char yposition[20];
     char groundState[20];
  
     
 
-    InitWindow(screenWidth, screenHeight, " SQUARED IN++ ");
+    InitWindow(screenWidth, screenHeight, " SQUARED IN++ "); //initilisation of the window 
 
     // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
-    Player player;
+    
+    Player player;// creation the player object
+    
+    //creates a few platforms to start off the program with
     Platform platform1(0, 800, 400, 100);
     Platform platform2(1000, 500, 200, 100);
     Platform platform3(400, 600, 200, 300);
@@ -47,10 +63,11 @@ int main(void)
     collidables.push_back(platform2);
     collidables.push_back(platform3);
     
-    
+    //creates a spike object to start the prograsm with
     Spike spike1(100,100,{500,300});
-    
+    //creates the vector of spike objects
     std::vector<Spike> spikes;
+    //adds the spike to the vector 
     spikes.push_back(spike1);
     
     //boolean in charge of ensuring the player can place squares or spikes
@@ -82,7 +99,6 @@ int main(void)
     {
     // Update
         
-        
         //toggles the ability to place blocks
         if(IsKeyPressed(KEY_P) && !canPlace) canPlace = true;
         else if(IsKeyPressed(KEY_P)) canPlace = false;
@@ -93,7 +109,6 @@ int main(void)
             collidables.push_back(CST);
             canPlace = false;
         }
-        
         //toggles the ability to place spikes
         if(IsKeyPressed(KEY_O) && !canPlaceSpk) canPlaceSpk = true;
         else if(IsKeyPressed(KEY_O)) canPlaceSpk = false;   
@@ -104,8 +119,6 @@ int main(void)
             spikes.push_back(CST);
             canPlaceSpk = false;
         }
-        
-        
         //allows dragging and resizing of objects
         for(int i = 0; i < collidables.size(); i++){
             
@@ -141,14 +154,13 @@ int main(void)
                 collidables[index].width += GetMouseDelta().x/collidables.size(); 
                 collidables[index].height += GetMouseDelta().y/collidables.size();
                } 
-          //handles over laping cursor instructions
+          //handles overlaping cursor instructions
            if(!reSize && !canPlace && !isDrag) SetMouseCursor(1); // sets cursor to normal if player cant place and drag and resize
            else if(!reSize && !isDrag) SetMouseCursor(3); // sets the cursor to place if you can place
            //deletes the block
            if(IsMouseButtonPressed(1)){
                 if(GetMouseX() < collidables[i].position.x + collidables[i].width && GetMouseX() > collidables[i].position.x && GetMouseY() < collidables[i].position.y + collidables[i].height && GetMouseY() > collidables[i].position.y){
                     collidables.erase(collidables.begin() + i);
-                    
                 }
            }
         }
@@ -190,7 +202,7 @@ int main(void)
                    spikes[index2].height += GetMouseDelta().y*2/spikes.size(); 
                }
                
-           //handles over laping cursor instructions
+           //handles overlaping cursor instructions
            if(!reSize && !(canPlace || canPlaceSpk) && !isDrag) SetMouseCursor(1); // sets cursor to normal if player cant place and drag and resize
            else if(!reSize && !isDrag) SetMouseCursor(3); // sets the cursor to place if you can place
            //deletes spike with a right click
@@ -200,22 +212,17 @@ int main(void)
            
         }
         
-        
-        
-        
-        
-        
-        
-        // player input 
+        // player input for moving 
          if (IsKeyDown(KEY_RIGHT) && player.xVelocity < player.getSpeed()) player.xVelocity += player.acceleration;
          else if(IsKeyDown(KEY_LEFT) && player.xVelocity > -player.getSpeed()) player.xVelocity -= player.acceleration;
          else if(player.xVelocity > 0) player.xVelocity /= player.Friction;
          else if(player.xVelocity < 0) player.xVelocity /= player.Friction;
          
+         //player input for jump
          if(IsKeyDown(KEY_UP) && player.isGrounded) {player.set_yVelocity(player.jumpStr);player.isGrounded = false;}
-         
+         //player input to reset
          if(IsKeyPressed(KEY_R) ) {player.position = {200,100}; player.isGrounded = false; player.set_yVelocity(0);}
-         
+         //updating the player Rec to have accurate visuals and collosion
          player.Rec = {player.position.x, player.position.y, player.width, player.height};
          
          
@@ -268,7 +275,7 @@ int main(void)
         }    
              
 
-          // deals with velocity 
+          // moves the player based on y velocity which is calculated when the player is not grounded 
           if(!player.isGrounded) player.set_yVelocity(player.get_yVelocity() - player.getGravity());
           else player.set_yVelocity(0);
           player.position.y -= player.get_yVelocity();
@@ -281,7 +288,7 @@ int main(void)
          sprintf(yposition, "y:  %f", player.position.y);
             
             
-      // Draw
+      // Draw, where the scene actually gets rendered and drawn out
 
         BeginDrawing();
 
@@ -291,8 +298,9 @@ int main(void)
              for(int i = 0; i < collidables.size(); i++){
                  //updates the objects rec for accurate visuals
                  collidables[i].rec = {collidables[i].position.x, collidables[i].position.y, collidables[i].width, collidables[i].height};
-                 
+                 //draws each platform at the index of the for loop
                  DrawRectanglePro(collidables[i].rec, {0,0}, 0, GRAY);
+                 //circles to show the corners of a platform
                  DrawCircle(collidables[i].position.x , collidables[i].position.y , 10, BLACK);
                  DrawCircle(collidables[i].position.x + collidables[i].width, collidables[i].position.y, 10, BLACK);
                  DrawCircle(collidables[i].position.x + collidables[i].width, collidables[i].position.y + collidables[i].height, 10, BLACK);
@@ -300,22 +308,26 @@ int main(void)
              }
              //draws a vector of spike of spike objects
              for(int i = 0; i < spikes.size(); i++){
+                 //updates the corners struct of the spikes to make collison and visuals more accurate 
                  spikes[i].corners = {{spikes[i].position.x, spikes[i].position.y-spikes[i].height/2}, {spikes[i].position.x - spikes[i].width/2, spikes[i].position.y+spikes[i].height/2},  {spikes[i].position.x + spikes[i].width/2, spikes[i].position.y+spikes[i].height/2}};
-                 
-                 DrawTriangle({spikes[i].position.x, spikes[i].position.y-spikes[i].height/2}, {spikes[i].position.x - spikes[i].width/2, spikes[i].position.y+spikes[i].height/2},  {spikes[i].position.x + spikes[i].width/2, spikes[i].position.y+spikes[i].height/2}, BLACK);
+                 //Draws each individual spike at the index of the for loop
+                 DrawTriangle(spikes[i].corners.Top, spikes[i].corners.BottomLeft, spikes[i].corners.BottomRight, BLACK);
                  DrawCircle(spikes[i].position.x, spikes[i].position.y, 10, WHITE);
              }    
              
              //draws player
              DrawRectanglePro(player.Rec, {0,0}, 0, BLACK);
+             //updates the players corners with his position
              player.corners = {{player.position.x, player.position.y}, {player.position.x + player.width, player.position.y}, {player.position.x + player.width, player.position.y + player.height}, {player.position.x, player.position.y + player.height}};
+             //draws a circle at the players origin for reference
              DrawCircle(player.position.x , player.position.y , 10, WHITE);
              
-             //draws player state text
+             //draws player text that displays the players y coordinate, y velocity, and Grounded state for debbuging
              DrawText(xposition, 100, 100, 30, BLACK); 
              DrawText(yposition, 100, 200, 30, BLACK); 
              DrawText(groundState, 100, 300, 30, BLACK);
              
+        //ends the drawing phase of the program     
         EndDrawing();
         //----------------------------------------------------------------------------------
     }
