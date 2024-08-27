@@ -217,9 +217,9 @@ int main(void)
          else if(IsKeyDown(KEY_LEFT) && player.xVelocity > -player.getSpeed()) player.xVelocity -= player.acceleration;
          else if(player.xVelocity > 0) player.xVelocity /= player.Friction;
          else if(player.xVelocity < 0) player.xVelocity /= player.Friction;
-         
+         //
          //player input for jump
-         if(IsKeyDown(KEY_UP) && player.isGrounded) {player.set_yVelocity(player.jumpStr);player.isGrounded = false;}
+         if(IsKeyDown(KEY_UP) && player.isGrounded) {player.set_yVelocity(player.jumpStr+abs(player.xVelocity)/2);player.isGrounded = false;}
          //player input to reset
          if(IsKeyPressed(KEY_R) ) {player.position = {200,100}; player.isGrounded = false; player.set_yVelocity(0);}
          //updating the player Rec to have accurate visuals and collosion
