@@ -63,7 +63,9 @@ int main(void)
     collidables.push_back(platform2);
     collidables.push_back(platform3);
     
-    //creates a spike object to start the prograsm with
+    Vector2 spawn = {100,100};
+    
+    //creates a spike object to start the program with
     Spike spike1(100,100,{500,300});
     //creates the vector of spike objects
     std::vector<Spike> spikes;
@@ -91,6 +93,12 @@ int main(void)
       //variables used for the dragging and resizing spikes
       bool dragging2 = false;
       bool resizing2 = false;
+      //used to toogle the level editor
+      bool editor = false;
+      //used for toggleling the pause menu
+      bool pause = false;
+      //used to drag spawn square
+      bool draggingSpw = false;
       
     //--------------------------------------------------------------------------------------
 
@@ -99,6 +107,24 @@ int main(void)
     {
     // Update
         
+        if(IsKeyDown(KEY_LEFT_SHIFT) && IsKeyPressed(KEY_E)){
+            if(editor) editor = false;
+            else editor = true;
+        }
+        
+      if(editor){
+          
+         if(GetMouseX() < spawn.x + 100 && GetMouseX() > spawn.x && GetMouseY() < spawn.y + 100 && GetMouseY() > spawn.y && IsMouseButtonPressed(0)){
+            draggingSpw = true;
+         }
+         if(IsMouseButtonReleased(0) && draggingSpw){
+            draggingSpw = false;
+         }     
+         if(draggingSpw){
+            spawn.x += GetMouseDelta().x;
+            spawn.y += GetMouseDelta().y;
+         }         
+          
         //toggles the ability to place blocks
         if(IsKeyPressed(KEY_P) && !canPlace) canPlace = true;
         else if(IsKeyPressed(KEY_P)) canPlace = false;
@@ -211,17 +237,20 @@ int main(void)
            }
            
         }
-        
-        // player input for moving 
-         if (IsKeyDown(KEY_RIGHT) && player.xVelocity < player.getSpeed()) player.xVelocity += player.acceleration;
-         else if(IsKeyDown(KEY_LEFT) && player.xVelocity > -player.getSpeed()) player.xVelocity -= player.acceleration;
-         else if(player.xVelocity > 0) player.xVelocity /= player.Friction;
-         else if(player.xVelocity < 0) player.xVelocity /= player.Friction;
-         //
+      } 
+      
+         
+            // player input for moving 
+            if (IsKeyDown(KEY_RIGHT) && player.xVelocity < player.getSpeed()) player.xVelocity += player.acceleration;
+            else if(IsKeyDown(KEY_LEFT) && player.xVelocity > -player.getSpeed()) player.xVelocity -= player.acceleration;
+            else if(player.xVelocity > 0) player.xVelocity /= player.Friction;
+            else if(player.xVelocity < 0) player.xVelocity /= player.Friction;
+         
+         
          //player input for jump
          if(IsKeyDown(KEY_UP) && player.isGrounded) {player.set_yVelocity(player.jumpStr+abs(player.xVelocity)/2);player.isGrounded = false;}
          //player input to reset
-         if(IsKeyPressed(KEY_R) ) {player.position = {200,100}; player.isGrounded = false; player.set_yVelocity(0);}
+         if(IsKeyPressed(KEY_R) ) {player.position = spawn; player.isGrounded = false; player.set_yVelocity(0);}
          //updating the player Rec to have accurate visuals and collosion
          player.Rec = {player.position.x, player.position.y, player.width, player.height};
          
@@ -268,19 +297,19 @@ int main(void)
         //spike collision
         for(Spike spike : spikes){
             if(CheckCollisionPointRec(spike.corners.Top, player.Rec) || CheckCollisionPointTriangle(player.corners.BottomRight, spike.corners.Top, spike.corners.BottomLeft, spike.corners.BottomRight) || CheckCollisionPointTriangle(player.corners.BottomLeft, spike.corners.Top, spike.corners.BottomLeft, spike.corners.BottomRight)){
-                player.position = {200,100};
+                player.position = spawn;
                 player.isGrounded = false;
                 player.set_yVelocity(0);
             }
         }    
-             
-
-          // moves the player based on y velocity which is calculated when the player is not grounded 
-          if(!player.isGrounded) player.set_yVelocity(player.get_yVelocity() - player.getGravity());
-          else player.set_yVelocity(0);
-          player.position.y -= player.get_yVelocity();
-          player.position.x += player.xVelocity;
-            
+          // stops player movement when level editor is active   
+          if(!(editor || pause)){
+            // moves the player based on y velocity which is calculated when the player is not grounded 
+            if(!player.isGrounded) player.set_yVelocity(player.get_yVelocity() - player.getGravity());
+            else player.set_yVelocity(0);
+            player.position.y -= player.get_yVelocity();
+            player.position.x += player.xVelocity;
+          }  
          
          //outputs player varibles for debbuging
          sprintf(groundState, "Ground state: %d", player.isGrounded);   
@@ -300,11 +329,13 @@ int main(void)
                  collidables[i].rec = {collidables[i].position.x, collidables[i].position.y, collidables[i].width, collidables[i].height};
                  //draws each platform at the index of the for loop
                  DrawRectanglePro(collidables[i].rec, {0,0}, 0, GRAY);
-                 //circles to show the corners of a platform
-                 DrawCircle(collidables[i].position.x , collidables[i].position.y , 10, BLACK);
-                 DrawCircle(collidables[i].position.x + collidables[i].width, collidables[i].position.y, 10, BLACK);
-                 DrawCircle(collidables[i].position.x + collidables[i].width, collidables[i].position.y + collidables[i].height, 10, BLACK);
-                 DrawCircle(collidables[i].position.x, collidables[i].position.y + collidables[i].height, 10, BLACK);
+                 if(editor){
+                    //circles to show the corners of a platform
+                    DrawCircle(collidables[i].position.x , collidables[i].position.y , 10, BLACK);
+                    DrawCircle(collidables[i].position.x + collidables[i].width, collidables[i].position.y, 10, BLACK);
+                    DrawCircle(collidables[i].position.x + collidables[i].width, collidables[i].position.y + collidables[i].height, 10, BLACK);
+                    DrawCircle(collidables[i].position.x, collidables[i].position.y + collidables[i].height, 10, BLACK);
+                 }
              }
              //draws a vector of spike of spike objects
              for(int i = 0; i < spikes.size(); i++){
@@ -312,15 +343,20 @@ int main(void)
                  spikes[i].corners = {{spikes[i].position.x, spikes[i].position.y-spikes[i].height/2}, {spikes[i].position.x - spikes[i].width/2, spikes[i].position.y+spikes[i].height/2},  {spikes[i].position.x + spikes[i].width/2, spikes[i].position.y+spikes[i].height/2}};
                  //Draws each individual spike at the index of the for loop
                  DrawTriangle(spikes[i].corners.Top, spikes[i].corners.BottomLeft, spikes[i].corners.BottomRight, BLACK);
-                 DrawCircle(spikes[i].position.x, spikes[i].position.y, 10, WHITE);
+                 if(editor){
+                    DrawCircle(spikes[i].position.x, spikes[i].position.y, 10, WHITE);
+                 }
              }    
              
              //draws player
              DrawRectanglePro(player.Rec, {0,0}, 0, BLACK);
              //updates the players corners with his position
              player.corners = {{player.position.x, player.position.y}, {player.position.x + player.width, player.position.y}, {player.position.x + player.width, player.position.y + player.height}, {player.position.x, player.position.y + player.height}};
-             //draws a circle at the players origin for reference
-             DrawCircle(player.position.x , player.position.y , 10, WHITE);
+             if(editor){
+                //draws a circle at the players origin for reference
+                DrawCircle(player.position.x , player.position.y , 10, WHITE);
+                DrawRectangle(spawn.x, spawn.y, 100, 100, RED);
+             }
              
              //draws player text that displays the players y coordinate, y velocity, and Grounded state for debbuging
              DrawText(xposition, 100, 100, 30, BLACK); 
