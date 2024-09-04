@@ -23,6 +23,8 @@
 #include <string>
 #include <cmath>
 
+#include "GameMethods.cpp"
+#include "WallExpanders.h"
 #include "raylib.h"
 #include "Player.h"
 #include "Platform.h"
@@ -56,6 +58,13 @@ int main(void)
     Platform platform2(1000, 500, 200, 100);
     Platform platform3(400, 600, 200, 300);
     
+    
+    WallExpanders wall1({0,0}, 900, 50, false);
+    WallExpanders wall2({1550,0}, 900, 52, true);
+    WallExpanders wall3({0,0}, 50, 1600, false);
+    WallExpanders wall4({0,850}, 50, 1600, true);
+    
+    WallExpanders walls[] = {wall1, wall2, wall3, wall4};
 
     //vector of platform objects to be checked for collision
     std::vector<Platform> collidables;
@@ -63,7 +72,12 @@ int main(void)
     collidables.push_back(platform2);
     collidables.push_back(platform3);
     
+    //vector for the player spawn
     Vector2 spawn = {100,100};
+    
+    //Vector for the exit door
+    Vector2 exit = {500,500};
+    
     
     //creates a spike object to start the program with
     Spike spike1(100,100,{500,300});
@@ -99,6 +113,8 @@ int main(void)
       bool pause = false;
       //used to drag spawn square
       bool draggingSpw = false;
+      //used to drag the exit door
+      bool draggingEXT = false;
       
     //--------------------------------------------------------------------------------------
 
@@ -106,7 +122,16 @@ int main(void)
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
     // Update
-        
+      if(!editor){
+        for(int i = 0; i < 4; i++){
+            walls[i].growthSizeH += 0.2;
+            walls[i].growthSizeW += 0.2;
+            if(walls[i].positionChange){
+                walls[i].position.x -= 0.2;
+                walls[i].position.y -= 0.2;
+            }    
+        }    
+      } 
         if(IsKeyDown(KEY_LEFT_SHIFT) && IsKeyPressed(KEY_E)){
             if(editor) editor = false;
             else editor = true;
@@ -114,6 +139,17 @@ int main(void)
         
       if(editor){
           
+         if(GetMouseX() < exit.x + 100 && GetMouseX() > exit.x && GetMouseY() < exit.y + 200 && GetMouseY() > exit.y && IsMouseButtonPressed(0)){
+            draggingEXT = true;
+         }
+         if(IsMouseButtonReleased(0) && draggingEXT){
+            draggingEXT = false;
+         }     
+         if(draggingEXT){
+            exit.x += GetMouseDelta().x;
+            exit.y += GetMouseDelta().y;
+         }
+         
          if(GetMouseX() < spawn.x + 100 && GetMouseX() > spawn.x && GetMouseY() < spawn.y + 100 && GetMouseY() > spawn.y && IsMouseButtonPressed(0)){
             draggingSpw = true;
          }
@@ -250,7 +286,16 @@ int main(void)
          //player input for jump
          if(IsKeyDown(KEY_UP) && player.isGrounded) {player.set_yVelocity(player.jumpStr+abs(player.xVelocity)/2);player.isGrounded = false;}
          //player input to reset
-         if(IsKeyPressed(KEY_R) ) {player.position = spawn; player.isGrounded = false; player.set_yVelocity(0);}
+         if(IsKeyPressed(KEY_R)){
+             player.position = spawn; 
+             player.isGrounded = false; 
+             player.set_yVelocity(0);
+             for(int i = 0; i < 4; i++){
+                    walls[i].growthSizeH = walls[i].height;
+                    walls[i].growthSizeW = walls[i].width;
+                    walls[i].position = walls[i].resetPos;
+             }
+         }
          //updating the player Rec to have accurate visuals and collosion
          player.Rec = {player.position.x, player.position.y, player.width, player.height};
          
@@ -294,12 +339,42 @@ int main(void)
         }
         if(!grounded) player.isGrounded = false;
         
+        for(int i = 0; i < 4; i++){
+            if(CheckCollisionRecs(player.Rec,{walls[i].position.x, walls[i].position.y, walls[i].growthSizeW, walls[i].growthSizeH})){
+             player.position = spawn;
+             player.isGrounded = false;
+             player.set_yVelocity(0);
+             for(int i = 0; i < 4; i++){
+                    walls[i].growthSizeH = walls[i].height;
+                    walls[i].growthSizeW = walls[i].width;
+                    walls[i].position = walls[i].resetPos;
+             }  
+        }
+        }    
+        
+        //checks for collision between the player and the exit
+        if(CheckCollisionRecs(player.Rec,{exit.x, exit.y, 100, 200})){
+             player.position = spawn;
+             player.isGrounded = false;
+             player.set_yVelocity(0);
+             for(int i = 0; i < 4; i++){
+                    walls[i].growthSizeH = walls[i].height;
+                    walls[i].growthSizeW = walls[i].width;
+                    walls[i].position = walls[i].resetPos;
+             }  
+        }
+        
         //spike collision
         for(Spike spike : spikes){
             if(CheckCollisionPointRec(spike.corners.Top, player.Rec) || CheckCollisionPointTriangle(player.corners.BottomRight, spike.corners.Top, spike.corners.BottomLeft, spike.corners.BottomRight) || CheckCollisionPointTriangle(player.corners.BottomLeft, spike.corners.Top, spike.corners.BottomLeft, spike.corners.BottomRight)){
                 player.position = spawn;
                 player.isGrounded = false;
                 player.set_yVelocity(0);
+                for(int i = 0; i < 4; i++){
+                    walls[i].growthSizeH = walls[i].height;
+                    walls[i].growthSizeW = walls[i].width;
+                    walls[i].position = walls[i].resetPos;
+                }    
             }
         }    
           // stops player movement when level editor is active   
@@ -321,14 +396,14 @@ int main(void)
 
         BeginDrawing();
 
-            ClearBackground(RAYWHITE);
+            ClearBackground(LIGHTGRAY);
             
             //draws a vector of plafrom objects
              for(int i = 0; i < collidables.size(); i++){
                  //updates the objects rec for accurate visuals
                  collidables[i].rec = {collidables[i].position.x, collidables[i].position.y, collidables[i].width, collidables[i].height};
                  //draws each platform at the index of the for loop
-                 DrawRectanglePro(collidables[i].rec, {0,0}, 0, GRAY);
+                 DrawRectanglePro(collidables[i].rec, {0,0}, 0, DARKGRAY);
                  if(editor){
                     //circles to show the corners of a platform
                     DrawCircle(collidables[i].position.x , collidables[i].position.y , 10, BLACK);
@@ -357,11 +432,18 @@ int main(void)
                 DrawCircle(player.position.x , player.position.y , 10, WHITE);
                 DrawRectangle(spawn.x, spawn.y, 100, 100, RED);
              }
+             //draws the exit door
+             DrawRectangle(exit.x,exit.y, 100, 200, WHITE);
+             if(editor){
+                //draws player text that displays the players y coordinate, y velocity, and Grounded state for debbuging
+                DrawText(xposition, 100, 100, 30, BLACK); 
+                DrawText(yposition, 100, 200, 30, BLACK); 
+                DrawText(groundState, 100, 300, 30, BLACK);
+             }
+             for(int i = 0; i < 4; i++){
+                DrawRectangle(walls[i].position.x, walls[i].position.y, walls[i].growthSizeW, walls[i].growthSizeH, BLACK);
+             }    
              
-             //draws player text that displays the players y coordinate, y velocity, and Grounded state for debbuging
-             DrawText(xposition, 100, 100, 30, BLACK); 
-             DrawText(yposition, 100, 200, 30, BLACK); 
-             DrawText(groundState, 100, 300, 30, BLACK);
              
         //ends the drawing phase of the program     
         EndDrawing();
