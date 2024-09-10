@@ -22,8 +22,10 @@
 #include <vector>
 #include <string>
 #include <cmath>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 
-#include "GameMethods.cpp"
 #include "WallExpanders.h"
 #include "raylib.h"
 #include "Player.h"
@@ -32,6 +34,8 @@
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------
+
+void SaveLevel(std::vector<Platform> platforms, std::vector<Spike> spikes, Vector2 playerSpawn);
 
 int main(void)
 {
@@ -135,6 +139,9 @@ int main(void)
         if(IsKeyDown(KEY_LEFT_SHIFT) && IsKeyPressed(KEY_E)){
             if(editor) editor = false;
             else editor = true;
+        }
+        if(IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S)){
+            SaveLevel(collidables, spikes, spawn);
         }
         
       if(editor){
@@ -461,3 +468,64 @@ int main(void)
 
     return 0;
 }
+
+//method that saves the values of platforms,spikes, player spawn, and exit to efectiely save the level, it goes from 1 - ∞ it saves it as the next avilible number in order 
+void SaveLevel(std::vector<Platform> platforms, std::vector<Spike> spikes, Vector2 playerSpawn){
+    std::ostringstream levelName;
+    std::ifstream levelFind;
+    //this determines which the next avalible Level number is by seeing what already exists
+    int counter = 1;
+    while(true){
+     levelName << "Level";
+     levelName << counter;
+     levelName << ".txt";
+     std::ifstream levelFind;
+     levelFind.open(levelName.str(), std::ifstream::in);
+     if(!levelFind.is_open()){
+         break;
+     }
+     counter++;
+     levelName.str("");
+    }
+    //this creates and writes values the file number that was determined in the last part
+    std::cout << levelName.str();
+    levelFind.close();
+    std::ofstream LevelFile(levelName.str());
+    if(!LevelFile.is_open()) std::
+    cout << "errorOpening FILE!";
+    std::ostringstream pushFile;
+    pushFile << "PLATFORMS\n";
+    for(Platform plat : platforms){
+        pushFile << plat.position.x;
+        pushFile << ", ";
+        pushFile << plat.position.y; 
+        pushFile << ", ";
+        pushFile << plat.width;
+        pushFile << ", ";
+        pushFile << plat.height;
+        pushFile << "; \n";         
+    }
+    pushFile << "SPIKES \n";
+    for(Spike spik : spikes){
+        pushFile << spik.position.x;
+        pushFile << ", ";
+        pushFile << spik.position.y; 
+        pushFile << ", ";
+        pushFile << spik.width;
+        pushFile << ", ";
+        pushFile << spik.height;
+        pushFile << "; \n";         
+    }
+    pushFile << "PLAYER\n";
+    pushFile << playerSpawn.x;
+    pushFile << ", ";
+    pushFile << playerSpawn.y;
+    pushFile << "\0";
+    
+    std::string add = pushFile.str();
+    
+    std::cout << add;
+    LevelFile << add;
+    LevelFile.close();
+    return;
+}    
