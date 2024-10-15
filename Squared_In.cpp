@@ -26,6 +26,7 @@
 #include <fstream>
 #include <sstream>
 
+#include "LevelBanner.h"
 #include "WallExpanders.h"
 #include "raylib.h"
 #include "Player.h"
@@ -35,7 +36,15 @@
 // Program main entry point
 //------------------------------------------------------------------------------------
 
-void SaveLevel(std::vector<Platform> platforms, std::vector<Spike> spikes, Vector2 playerSpawn);
+void SaveLevel(std::vector<Platform> platforms, std::vector<Spike> spikes, Vector2 playerSpawn, Vector2 exit);
+void loadLevel(std::string level, Vector2 *exit, Vector2 *spawn, bool *editor);
+void refresh();
+
+std::vector<LevelBanner> levels;
+std::vector<Platform> collidables;
+std::vector<Spike> spikes;
+// used to render the level or main menu
+bool menu = true;
 
 int main(void)
 {
@@ -48,9 +57,7 @@ int main(void)
     char xposition[20];
     char yposition[20];
     char groundState[20];
- 
     
-
     InitWindow(screenWidth, screenHeight, " SQUARED IN++ "); //initilisation of the window 
 
     // NOTE: Textures MUST be loaded after Window initialization (OpenGL context is required)
@@ -71,22 +78,20 @@ int main(void)
     WallExpanders walls[] = {wall1, wall2, wall3, wall4};
 
     //vector of platform objects to be checked for collision
-    std::vector<Platform> collidables;
+    
     collidables.push_back(platform1);
     collidables.push_back(platform2);
     collidables.push_back(platform3);
     
     //vector for the player spawn
     Vector2 spawn = {100,100};
-    
+
     //Vector for the exit door
     Vector2 exit = {500,500};
-    
-    
     //creates a spike object to start the program with
     Spike spike1(100,100,{500,300});
     //creates the vector of spike objects
-    std::vector<Spike> spikes;
+    
     //adds the spike to the vector 
     spikes.push_back(spike1);
     
@@ -121,7 +126,12 @@ int main(void)
       bool draggingEXT = false;
       
     //--------------------------------------------------------------------------------------
-
+    //refreshes the level list on start
+    refresh();
+    //sets player position on start
+    player.position = spawn;
+    player.isGrounded = false;
+    player.set_yVelocity(0);
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
@@ -141,7 +151,7 @@ int main(void)
             else editor = true;
         }
         if(IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S)){
-            SaveLevel(collidables, spikes, spawn);
+            SaveLevel(collidables, spikes, spawn, exit);
         }
         
       if(editor){
@@ -171,6 +181,10 @@ int main(void)
         //toggles the ability to place blocks
         if(IsKeyPressed(KEY_P) && !canPlace) canPlace = true;
         else if(IsKeyPressed(KEY_P)) canPlace = false;
+        
+        //toggles the ability to place blocks
+        if(IsKeyPressed(KEY_Q) && IsKeyDown(KEY_LEFT_SHIFT)) menu = true;
+        
           
         //creates a platform at mouse X,Y
         if(IsMouseButtonDown(0) && canPlace){
@@ -361,9 +375,7 @@ int main(void)
         
         //checks for collision between the player and the exit
         if(CheckCollisionRecs(player.Rec,{exit.x, exit.y, 100, 200})){
-             player.position = spawn;
-             player.isGrounded = false;
-             player.set_yVelocity(0);
+             menu = true;
              for(int i = 0; i < 4; i++){
                     walls[i].growthSizeH = walls[i].height;
                     walls[i].growthSizeW = walls[i].width;
@@ -404,6 +416,8 @@ int main(void)
         BeginDrawing();
 
             ClearBackground(LIGHTGRAY);
+            
+          if(!menu){
             
             //draws a vector of plafrom objects
              for(int i = 0; i < collidables.size(); i++){
@@ -449,7 +463,41 @@ int main(void)
              }
              for(int i = 0; i < 4; i++){
                 DrawRectangle(walls[i].position.x, walls[i].position.y, walls[i].growthSizeW, walls[i].growthSizeH, BLACK);
-             }    
+               
+             }
+             
+          }else{
+                
+             if(IsKeyDown(KEY_LEFT_SHIFT) && IsKeyPressed(KEY_L)){
+                 refresh();
+             }
+             for(int i = 0; i < levels.size(); i++){
+                 DrawRectangle(levels[i].position.x, levels[i].position.y, levels[i].width, levels[i].height, BLACK);
+                  DrawText(levels[i].levelName.c_str(), levels[i].position.x + levels[i].width/2 - 40, levels[i].position.y + levels[i].height/2, 30, WHITE);
+                 if(GetMouseX() < levels[i].position.x + levels[i].width && GetMouseX() > levels[i].position.x && GetMouseY() < levels[i].position.y + levels[i].height && GetMouseY() > levels[i].position.y && IsMouseButtonPressed(0)){
+                 
+                        loadLevel(levels[i].levelName, &exit, &spawn, &editor);
+                        player.position = spawn;
+                        player.isGrounded = false;
+                        player.set_yVelocity(0);
+                       
+                 }
+             }
+             if(IsKeyPressed(KEY_UP)){
+                  for(int i = 0; i < levels.size(); i++){
+                      levels[i].position.y -= 45;
+                  }
+             }
+             if(IsKeyPressed(KEY_DOWN)){
+                  for(int i = 0; i < levels.size(); i++){
+                      levels[i].position.y += 45;
+                  }
+             }
+             
+                
+              
+              
+          }   
              
              
         //ends the drawing phase of the program     
@@ -470,7 +518,7 @@ int main(void)
 }
 
 //method that saves the values of platforms,spikes, player spawn, and exit to efectiely save the level, it goes from 1 - ∞ it saves it as the next avilible number in order 
-void SaveLevel(std::vector<Platform> platforms, std::vector<Spike> spikes, Vector2 playerSpawn){
+void SaveLevel(std::vector<Platform> platforms, std::vector<Spike> spikes, Vector2 playerSpawn, Vector2 exit){
     std::ostringstream levelName;
     std::ifstream levelFind;
     //this determines which the next avalible Level number is by seeing what already exists
@@ -487,7 +535,7 @@ void SaveLevel(std::vector<Platform> platforms, std::vector<Spike> spikes, Vecto
      counter++;
      levelName.str("");
     }
-    //this creates and writes values the file number that was determined in the last part
+    //this creates and writes values to the file number that was determined in the last part
     std::cout << levelName.str();
     levelFind.close();
     std::ofstream LevelFile(levelName.str());
@@ -507,20 +555,27 @@ void SaveLevel(std::vector<Platform> platforms, std::vector<Spike> spikes, Vecto
     }
     pushFile << "SPIKES \n";
     for(Spike spik : spikes){
-        pushFile << spik.position.x;
-        pushFile << ", ";
-        pushFile << spik.position.y; 
-        pushFile << ", ";
         pushFile << spik.width;
         pushFile << ", ";
         pushFile << spik.height;
+        pushFile << ", ";
+        pushFile << spik.position.x;
+        pushFile << ", ";
+        pushFile << spik.position.y; 
         pushFile << "; \n";         
     }
     pushFile << "PLAYER\n";
     pushFile << playerSpawn.x;
     pushFile << ", ";
     pushFile << playerSpawn.y;
-    pushFile << "\0";
+    pushFile << ";\n";
+    
+    pushFile << "EXIT\n";
+    pushFile << exit.x;
+    pushFile << ", ";
+    pushFile << exit.y;
+    pushFile << ";";
+    
     
     std::string add = pushFile.str();
     
@@ -529,3 +584,196 @@ void SaveLevel(std::vector<Platform> platforms, std::vector<Spike> spikes, Vecto
     LevelFile.close();
     return;
 }    
+
+void loadLevel(std::string level, Vector2 *exit, Vector2 *spawn, bool *editor){
+    std::ifstream levelFile(level);
+    std::string levelContents;
+    
+    if (levelFile){ 
+    
+    std::string levelLine;
+      while (getline( levelFile, levelLine)){
+      
+        levelContents += levelLine + "\n";
+      }
+    levelFile.close();
+    }
+    
+    levelContents = levelContents.substr(10);
+    int counter = 0;
+    bool stop = false;
+    bool plats = false;
+    std::vector<Platform> platforms;
+    
+    int arrayPos = 0;
+    
+    while(!plats){
+        int dataList[4];
+       // while(!stop){
+            
+            while(levelContents.at(counter) != ',' && levelContents.at(counter) != ';'){
+                 if(levelContents.at(counter) == 'S') plats = true;
+                 if(levelContents.at(counter) == ';') stop = true;
+                 counter++; 
+            }
+           if(plats) break;
+           if(stop) break;
+            std::cout << levelContents.substr(0,counter) << "\n";
+            
+            dataList[arrayPos] = std::stoi(levelContents.substr(0,counter));
+            if(arrayPos < 3)arrayPos++;
+            else{
+                arrayPos = 0;
+                Platform plat(dataList[0],dataList[1],dataList[2],dataList[3]);
+                platforms.push_back(plat);
+                std::cout << "add";
+            }
+           
+            levelContents = levelContents.substr(counter + 2);
+            
+            counter = 0;
+             
+    //    }
+        
+    std::cout << "\n";    
+  }
+   collidables = platforms;  
+   levelContents = levelContents.substr(9);
+   std::cout << levelContents;
+   
+    stop = false;
+    plats = false;
+    std::vector<Spike> spikesP;
+    counter = 0;
+    
+    
+    arrayPos = 0;
+    while(!plats){
+        int dataList[4];
+       // while(!stop){
+            
+            
+            while(levelContents.at(counter) != ',' && levelContents.at(counter) != ';'){
+                 if(levelContents.at(counter) == 'P') plats = true;
+                 if(levelContents.at(counter) == ';') stop = true;
+                 counter++; 
+            }
+           if(plats) break;
+           if(stop) break;
+           
+            std::cout << levelContents.substr(0,counter) << "\n";
+            
+            dataList[arrayPos] = std::stoi(levelContents.substr(0,counter));
+            if(arrayPos < 3)arrayPos++;
+            else{
+                Spike spik(dataList[0],dataList[1],{dataList[2],dataList[3]});
+                spikesP.push_back(spik);
+                arrayPos = 0;
+                std::cout << "add fr";
+            }
+            levelContents = levelContents.substr(counter + 2);
+            
+            counter = 0;
+      //  }
+        if(plats) break;
+        
+       
+
+   }
+   spikes = spikesP;
+    levelContents = levelContents.substr(7);
+   std::cout << levelContents;
+   Vector2 PlayerS;
+   counter = 0;
+   while(levelContents.at(counter) != ',' && levelContents.at(counter) != ';'){
+        if(levelContents.at(counter) == 'P') plats = true;
+        if(levelContents.at(counter) == ';') stop = true;
+        counter++; 
+   }
+    PlayerS.x = std::stoi(levelContents.substr(0,counter));
+    std::cout << levelContents.substr(0,counter) << "\n";
+    levelContents = levelContents.substr(counter + 2);
+    std::cout << levelContents.substr(0,counter) << "\n";
+    
+    counter = 0;
+    
+    while(levelContents.at(counter) != ',' && levelContents.at(counter) != ';'){
+        if(levelContents.at(counter) == 'P') plats = true;
+        if(levelContents.at(counter) == ';') stop = true;
+        counter++; 
+   }
+    PlayerS.y = std::stoi(levelContents.substr(0,counter));
+    std::cout << levelContents.substr(0,counter) << "\n";
+    levelContents = levelContents.substr(counter + 2);
+    std::cout << "\n" << PlayerS.y  << ", " << PlayerS.x;
+    
+    levelContents = levelContents.substr(5);
+    std::cout << levelContents;
+    
+    Vector2 ExitP;
+    counter = 0;
+    
+    while(levelContents.at(counter) != ',' && levelContents.at(counter) != ';'){
+        if(levelContents.at(counter) == ';') stop = true;
+        counter++; 
+    }
+    ExitP.x = std::stoi(levelContents.substr(0,counter));
+    std::cout << levelContents.substr(0,counter) << "\n";
+    levelContents = levelContents.substr(counter + 2);
+    std::cout << levelContents.substr(0,counter) << "\n";
+    
+    counter = 0;
+    
+    while(levelContents.at(counter) != ',' && levelContents.at(counter) != ';'){
+        if(levelContents.at(counter) == ';') stop = true;
+        counter++; 
+    }
+    ExitP.y = std::stoi(levelContents.substr(0,counter));
+    std::cout << levelContents.substr(0,counter) << "\n";
+    
+    *exit = ExitP;
+    *spawn = PlayerS;
+    
+    menu = false;
+    counter = 0;
+    std::cout << platforms.size();
+    while(counter < platforms.size()){
+        
+        std::cout << "fr";
+        counter++;
+    }
+    std::cout << "/n";
+ 
+    std::cout << spawn->x;
+    std::cout << spawn->y;
+    *editor = false;
+  }
+  
+
+
+void refresh(){
+    std::ostringstream levelName;
+    std::ifstream levelFind;
+    
+    levels = {};
+    
+    int counter = 1;
+    int position = 200;
+    while(true){
+        levelName << "Level";
+        levelName << counter;
+        levelName << ".txt";
+        std::ifstream levelFind;
+        levelFind.open(levelName.str(), std::ifstream::in);
+        if(!levelFind.is_open()){
+            break;
+        }
+        Vector2 location = {100,position};
+        LevelBanner banner(location, 1400, 200, levelName.str());
+        levels.push_back(banner);
+        position += 250;
+        counter++;
+                   
+        levelName.str("");
+    }
+} 
