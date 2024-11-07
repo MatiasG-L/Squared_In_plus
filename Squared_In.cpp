@@ -462,18 +462,24 @@ int main(void)
                 DrawText(groundState, 100, 300, 30, BLACK);
              }
              for(int i = 0; i < 4; i++){
+                //draws the walls 
                 DrawRectangle(walls[i].position.x, walls[i].position.y, walls[i].growthSizeW, walls[i].growthSizeH, BLACK);
                
              }
              
           }else{
+          // draws the menu screen when your not in a level
                 
              if(IsKeyDown(KEY_LEFT_SHIFT) && IsKeyPressed(KEY_L)){
+                 //refreshes the levels
                  refresh();
              }
              for(int i = 0; i < levels.size(); i++){
+                 //draws the levels and their name
+                 std::string levelName = levels[i].levelName.substr(0, levels[i].levelName.length( )-4);
                  DrawRectangle(levels[i].position.x, levels[i].position.y, levels[i].width, levels[i].height, BLACK);
-                  DrawText(levels[i].levelName.c_str(), levels[i].position.x + levels[i].width/2 - 40, levels[i].position.y + levels[i].height/2, 30, WHITE);
+                 DrawText(levelName.c_str(), levels[i].position.x + levels[i].width/2 - 60, levels[i].position.y + levels[i].height/2 - 10, 40, WHITE);
+                 //checks the mouse collision with the level to detect a click and intiate the level
                  if(GetMouseX() < levels[i].position.x + levels[i].width && GetMouseX() > levels[i].position.x && GetMouseY() < levels[i].position.y + levels[i].height && GetMouseY() > levels[i].position.y && IsMouseButtonPressed(0)){
                  
                         loadLevel(levels[i].levelName, &exit, &spawn, &editor);
@@ -482,19 +488,24 @@ int main(void)
                         player.set_yVelocity(0);
                        
                  }
-             }
+             }                                                                                       
              if(IsKeyPressed(KEY_UP)){
                   for(int i = 0; i < levels.size(); i++){
+                      //scroll up
                       levels[i].position.y -= 45;
                   }
              }
              if(IsKeyPressed(KEY_DOWN)){
                   for(int i = 0; i < levels.size(); i++){
+                      //scroll down
                       levels[i].position.y += 45;
                   }
              }
+             for(int i = 0; i < levels.size(); i++){
+                      //scroll down
+                      levels[i].position.y += GetMouseWheelMove()*20;
+                  }
              
-                
               
               
           }   
@@ -584,21 +595,23 @@ void SaveLevel(std::vector<Platform> platforms, std::vector<Spike> spikes, Vecto
     LevelFile.close();
     return;
 }    
-
+//a function that reads and extracts the data from the level files and sets up the envirement and load the level
 void loadLevel(std::string level, Vector2 *exit, Vector2 *spawn, bool *editor){
+    // opens the level file as a ifstream object to read from it 
     std::ifstream levelFile(level);
+    //creates a string to have the level contents copied to
     std::string levelContents;
     
     if (levelFile){ 
-    
     std::string levelLine;
       while (getline( levelFile, levelLine)){
-      
         levelContents += levelLine + "\n";
       }
+      //closes the ifstream object once the data is on the string
     levelFile.close();
     }
     
+    //creates a loop that goes through and takes all the platform object data and turns them into platform obejcts
     levelContents = levelContents.substr(10);
     int counter = 0;
     bool stop = false;
@@ -609,7 +622,6 @@ void loadLevel(std::string level, Vector2 *exit, Vector2 *spawn, bool *editor){
     
     while(!plats){
         int dataList[4];
-       // while(!stop){
             
             while(levelContents.at(counter) != ',' && levelContents.at(counter) != ';'){
                  if(levelContents.at(counter) == 'S') plats = true;
@@ -617,7 +629,6 @@ void loadLevel(std::string level, Vector2 *exit, Vector2 *spawn, bool *editor){
                  counter++; 
             }
            if(plats) break;
-           if(stop) break;
             std::cout << levelContents.substr(0,counter) << "\n";
             
             dataList[arrayPos] = std::stoi(levelContents.substr(0,counter));
@@ -631,27 +642,23 @@ void loadLevel(std::string level, Vector2 *exit, Vector2 *spawn, bool *editor){
            
             levelContents = levelContents.substr(counter + 2);
             
-            counter = 0;
-             
-    //    }
+            counter = 0;        
         
     std::cout << "\n";    
   }
+   //sets veriables for the level with newly extracted data
    collidables = platforms;  
    levelContents = levelContents.substr(9);
    std::cout << levelContents;
    
+    // loop to extract data for the spike objects
     stop = false;
     plats = false;
     std::vector<Spike> spikesP;
     counter = 0;
-    
-    
     arrayPos = 0;
     while(!plats){
         int dataList[4];
-       // while(!stop){
-            
             
             while(levelContents.at(counter) != ',' && levelContents.at(counter) != ';'){
                  if(levelContents.at(counter) == 'P') plats = true;
@@ -659,7 +666,6 @@ void loadLevel(std::string level, Vector2 *exit, Vector2 *spawn, bool *editor){
                  counter++; 
             }
            if(plats) break;
-           if(stop) break;
            
             std::cout << levelContents.substr(0,counter) << "\n";
             
@@ -674,17 +680,16 @@ void loadLevel(std::string level, Vector2 *exit, Vector2 *spawn, bool *editor){
             levelContents = levelContents.substr(counter + 2);
             
             counter = 0;
-      //  }
         if(plats) break;
         
-       
-
    }
+   //sets variables for the level with newly extracted data
    spikes = spikesP;
-    levelContents = levelContents.substr(7);
+   levelContents = levelContents.substr(7);
    std::cout << levelContents;
    Vector2 PlayerS;
    counter = 0;
+   //extracts data for the player spawn point(x)
    while(levelContents.at(counter) != ',' && levelContents.at(counter) != ';'){
         if(levelContents.at(counter) == 'P') plats = true;
         if(levelContents.at(counter) == ';') stop = true;
@@ -696,7 +701,7 @@ void loadLevel(std::string level, Vector2 *exit, Vector2 *spawn, bool *editor){
     std::cout << levelContents.substr(0,counter) << "\n";
     
     counter = 0;
-    
+    //extracts data for the player spawn(Y)
     while(levelContents.at(counter) != ',' && levelContents.at(counter) != ';'){
         if(levelContents.at(counter) == 'P') plats = true;
         if(levelContents.at(counter) == ';') stop = true;
@@ -712,7 +717,7 @@ void loadLevel(std::string level, Vector2 *exit, Vector2 *spawn, bool *editor){
     
     Vector2 ExitP;
     counter = 0;
-    
+    //extracts data for the exit(x)
     while(levelContents.at(counter) != ',' && levelContents.at(counter) != ';'){
         if(levelContents.at(counter) == ';') stop = true;
         counter++; 
@@ -723,7 +728,7 @@ void loadLevel(std::string level, Vector2 *exit, Vector2 *spawn, bool *editor){
     std::cout << levelContents.substr(0,counter) << "\n";
     
     counter = 0;
-    
+    //extracts data for the exit(y)
     while(levelContents.at(counter) != ',' && levelContents.at(counter) != ';'){
         if(levelContents.at(counter) == ';') stop = true;
         counter++; 
@@ -731,9 +736,11 @@ void loadLevel(std::string level, Vector2 *exit, Vector2 *spawn, bool *editor){
     ExitP.y = std::stoi(levelContents.substr(0,counter));
     std::cout << levelContents.substr(0,counter) << "\n";
     
+    //sets the value of the varible pointed to by the newly extracted data
     *exit = ExitP;
     *spawn = PlayerS;
     
+    //sets up level values and gets ready to load in
     menu = false;
     counter = 0;
     std::cout << platforms.size();
@@ -746,32 +753,45 @@ void loadLevel(std::string level, Vector2 *exit, Vector2 *spawn, bool *editor){
  
     std::cout << spawn->x;
     std::cout << spawn->y;
+    //sets the value pointed to as false to start rendering the level
     *editor = false;
   }
   
 
-
+//refreshes the level list incase some levels were added or removed
 void refresh(){
+    
     std::ostringstream levelName;
     std::ifstream levelFind;
     
     levels = {};
     
     int counter = 1;
-    int position = 200;
+    int positionY = 200;
+    int positionX = 100;
+    int reset = 0;
     while(true){
         levelName << "Level";
         levelName << counter;
         levelName << ".txt";
         std::ifstream levelFind;
+        //if a level was success fully opened then it exists so we test the proceding level, once a level fails to open then its implied it dosent exist (this method is prone to failier as a file failing to open dosent exatly mean it dosent exist there are many other issues that would make a file refuse to open, but its good enough for my purposes) so we know up to what level exits
         levelFind.open(levelName.str(), std::ifstream::in);
         if(!levelFind.is_open()){
             break;
         }
-        Vector2 location = {100,position};
-        LevelBanner banner(location, 1400, 200, levelName.str());
+        // assign the file name and a location to a LevelBanner object so it can be represented in the menu screen
+        Vector2 location = {positionX ,positionY};
+        LevelBanner banner(location, 400, 200, levelName.str());
         levels.push_back(banner);
-        position += 250;
+        
+        positionX += 500;
+         reset++;
+        if(reset > 2){
+            positionY += 250;
+            positionX = 100;
+            reset = 0;
+        }
         counter++;
                    
         levelName.str("");
